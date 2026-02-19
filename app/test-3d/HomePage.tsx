@@ -165,25 +165,7 @@ export default function HomePage() {
       <header className="top-nav">
         <nav className="nav-pill">
           <div className="nav-links">
-            <button
-              className={`nav-item ${active === "Home" ? "active" : ""}`}
-              onClick={() => setActive("Home")}
-              type="button"
-            >
-              <span className="nav-label">Home</span>
-            </button>
-
-
-              <span className="nav-label">Customize</span>
-            </button>
-
-            <button
-              className={`nav-item ${active === "Garage" ? "active" : ""}`}
-              onClick={() => setActive("Garage")}
-              type="button"
-            >
-              <span className="nav-label">Garage</span>
-            </button>
+        
 
             <button
               className={`nav-item ${active === "Subscription" ? "active" : ""}`}

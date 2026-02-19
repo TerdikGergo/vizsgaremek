@@ -1,68 +1,1088 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+:root {
+  --bg1: #06121f;
+  --neon: #6ee7ff;
+  --neon2: #4aa3ff;
+  --text: #eaf6ff;
+  --muted: rgba(234, 246, 255, 0.75);
+}
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: var(--text);
+  background: radial-gradient(1200px 700px at 50% 30%, #0f3f74 0%, var(--bg1) 55%, #040b14 100%);
+  overflow: hidden;
+}
+
+.home-root {
+  position: relative;
+  min-height: 100vh;
+}
+
+.home-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(700px 380px at 50% 25%, rgba(110, 231, 255, 0.18), transparent 55%),
+    radial-gradient(600px 340px at 60% 35%, rgba(74, 163, 255, 0.15), transparent 60%);
+  pointer-events: none;
+}
+
+/* ===== NAV ===== */
+
+.top-nav {
+  position: relative;
+  z-index: 5;
+  padding: 18px 18px 0 18px;
+  display: flex;
+  justify-content: center;
+}
+
+.nav-pill {
+  width: min(980px, 94vw);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+
+  border: 1px solid rgba(110, 231, 255, 0.35);
+  background: rgba(4, 14, 26, 0.35);
+  backdrop-filter: blur(10px);
+
+  box-shadow:
+    0 0 0 1px rgba(74, 163, 255, 0.12) inset,
+    0 10px 30px rgba(0, 0, 0, 0.35),
+    0 0 22px rgba(110, 231, 255, 0.12);
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-pill::before,
+.nav-pill::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 140px;
+  background: linear-gradient(90deg, transparent, rgba(110, 231, 255, 0.28), transparent);
+  transform: skewX(-25deg);
+  opacity: 0.65;
+  pointer-events: none;
+}
+.nav-pill::before { left: 140px; }
+.nav-pill::after { left: 420px; opacity: 0.35; }
+
+.nav-links {
+  flex: 1;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.nav-item {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: clamp(14px, 1.6vw, 20px);
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 160ms ease, color 160ms ease, text-shadow 160ms ease;
+  white-space: nowrap;
+  position: relative;
+}
+
+.nav-item:hover {
+  color: var(--text);
+  text-shadow:
+    0 0 10px rgba(110, 231, 255, 0.55),
+    0 0 22px rgba(74, 163, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.nav-label {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 4px;
+}
+
+.nav-item.active .nav-label::after,
+.nav-item:hover .nav-label::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, rgba(110, 231, 255, 0.95), transparent);
+  box-shadow: 0 0 14px rgba(110, 231, 255, 0.55);
+}
+
+.nav-item.active {
+  color: var(--text);
+  text-shadow:
+    0 0 12px rgba(110, 231, 255, 0.65),
+    0 0 26px rgba(74, 163, 255, 0.28);
+}
+
+.nav-icon {
+  flex: 0 0 auto;
+  border: 1px solid rgba(110, 231, 255, 0.28);
+  background: rgba(10, 25, 45, 0.35);
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 18px rgba(110, 231, 255, 0.12);
+  transition: box-shadow 180ms ease, transform 180ms ease;
+}
+
+.nav-icon:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 22px rgba(110, 231, 255, 0.22),
+    0 0 34px rgba(74, 163, 255, 0.14);
+}
+
+.profile-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(110, 231, 255, 0.85);
+  box-shadow: 0 0 14px rgba(110, 231, 255, 0.65);
+}
+
+@media (max-width: 560px) {
+  .nav-links {
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: none;
   }
-  .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+  .nav-links::-webkit-scrollbar { display: none; }
+}
+
+/* ===== STAGE / 3D ===== */
+
+.stage {
+  position: relative;
+  z-index: 2;
+  height: calc(100vh - 90px);
+  display: grid;
+  place-items: center;
+  padding: clamp(10px, 2vw, 24px);
+}
+
+.canvas-wrap {
+  width: min(1200px, 96vw);
+  height: min(900px, 86vh);
+  position: relative;
+}
+
+.canvas-wrap canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  background: transparent !important;
+}
+
+/* Mobil: a canvas kapjon MINÉL több helyet */
+@media (max-width: 520px) {
+  .top-nav { padding: 12px 12px 0 12px; }
+
+  .stage {
+    height: calc(100vh - 78px);
+    padding: 8px 8px 16px 8px;
+  }
+
+  .canvas-wrap {
+    width: 98vw;
+    height: 100%;
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
+
+/* =================================================
+   GARAGE
+   ================================================= */
+
+/* ✅ Shared back button style (használd Customize-on is ugyanígy) */
+.app-backBtn {
+  position: absolute;
+  top: 22px;
+  left: 22px;
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(110, 255, 255, 0.18);
+
+  box-shadow:
+    0 0 0 1px rgba(110, 255, 255, 0.06) inset,
+    0 0 22px rgba(110, 255, 255, 0.10);
+
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  display: grid;
+  place-items: center;
+
+  cursor: pointer;
+  z-index: 20;
+}
+
+/* nincs hover effekt-kérés a kártyákra, de a gomb lehet stabilan ugyanaz */
+.app-backBtn:hover {
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.app-backIcon {
+  position: relative;
+  width: 18px;
+  height: 2px;
+  border-radius: 999px;
+  background: rgba(110, 255, 255, 0.90);
+  box-shadow: 0 0 14px rgba(110, 255, 255, 0.20);
+}
+
+.app-backIcon::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  border-left: 2px solid rgba(110, 255, 255, 0.90);
+  border-bottom: 2px solid rgba(110, 255, 255, 0.90);
+  transform: translateY(-50%) rotate(45deg);
+}
+
+/* Title pill */
+.garage-titlePill {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 44px;
+  min-width: 220px;
+  padding: 0 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(110, 255, 255, 0.14);
+
+  box-shadow:
+    0 0 0 1px rgba(110, 255, 255, 0.06) inset,
+    0 12px 30px rgba(0, 0, 0, 0.35),
+    0 0 28px rgba(110, 255, 255, 0.10);
+
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  z-index: 10;
+}
+
+.garage-titlePillText {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: rgba(235, 255, 255, 0.92);
+  text-shadow: 0 0 14px rgba(110, 255, 255, 0.18);
+}
+
+/* Search */
+.garage-searchWrap {
+  position: absolute;
+  right: 60px;
+  top: 28px;
+  width: min(360px, calc(100vw - 140px));
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border-radius: 10px;
+
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(110, 255, 255, 0.14);
+  box-shadow:
+    0 0 0 1px rgba(110, 255, 255, 0.06) inset,
+    0 0 28px rgba(110, 255, 255, 0.08);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  z-index: 10;
+}
+
+.garage-searchIcon {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(235, 255, 255, 0.6);
+  border-radius: 50%;
+  position: relative;
+}
+
+.garage-searchIcon::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 2px;
+  background: rgba(235, 255, 255, 0.6);
+  right: -6px;
+  bottom: -3px;
+  transform: rotate(45deg);
+  border-radius: 999px;
+}
+
+.garage-searchInput {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 16px;
+  color: rgba(235, 255, 255, 0.92);
+}
+
+.garage-searchInput::placeholder {
+  color: rgba(235, 255, 255, 0.45);
+  font-style: italic;
+}
+
+/* Layout */
+.garage-content {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 120px;
+  bottom: 40px;
+  padding: 60px 60px 30px;
+
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+}
+
+.garage-left {
+  flex: 0 0 380px;
+}
+
+.garage-right {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Left selected card */
+.garage-carCard {
+  width: 100%;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(110, 255, 255, 0.14);
+  box-shadow:
+    0 0 0 1px rgba(110, 255, 255, 0.06) inset,
+    0 0 28px rgba(110, 255, 255, 0.10);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.garage-carCardHeader {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(235, 255, 255, 0.92);
+  border-bottom: 1px solid rgba(110, 255, 255, 0.14);
+  text-shadow: 0 0 14px rgba(110, 255, 255, 0.16);
+}
+
+.garage-carPreview {
+  height: 210px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.garage-previewInner {
+  width: calc(100% - 30px);
+  height: calc(100% - 30px);
+  border: 1px dashed rgba(110, 255, 255, 0.20);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.garage-previewLabel {
+  font-size: 12px;
+  color: rgba(235, 255, 255, 0.70);
+}
+
+.garage-previewFile {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(235, 255, 255, 0.92);
+  text-shadow: 0 0 12px rgba(110, 255, 255, 0.14);
+}
+
+.garage-previewHint {
+  font-size: 11px;
+  color: rgba(235, 255, 255, 0.50);
+}
+
+/* ✅ Right side: 1 sorban (3 kártya) */
+.garage-row {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  flex-wrap: nowrap; /* desktopon fix egy sor */
+}
+
+/* Saved card: hover ne csináljon semmit */
+.garage-saveCard {
+  width: 260px;
+  position: relative;
+  border-radius: 12px;
+  cursor: pointer;
+  user-select: none;
+  overflow: hidden;
+
+  background: rgba(0, 0, 0, 0.18);
+  border: 2px solid rgba(110, 255, 255, 0.18);
+
+  box-shadow:
+    0 0 0 1px rgba(110, 255, 255, 0.06) inset,
+    0 0 22px rgba(110, 255, 255, 0.08);
+
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.garage-saveCard:hover {
+  /* ✅ semmi */
+  transform: none;
+}
+
+/* ✅ selected: erős glow (mindig csak 1) */
+.garage-saveCard.isSelected {
+  border-color: rgba(110, 255, 255, 0.60);
+  box-shadow:
+    0 0 0 1px rgba(110, 255, 255, 0.18) inset,
+    0 0 60px rgba(110, 255, 255, 0.32),
+    0 0 130px rgba(110, 255, 255, 0.10);
+}
+
+.garage-saveCard:focus-visible {
+  outline: 2px solid rgba(110, 255, 255, 0.45);
+  outline-offset: 4px;
+}
+
+/* Pencil */
+.garage-pencil {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+
+  border-radius: 8px;
+  border: 1px solid rgba(110, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.22);
+  color: rgba(235, 255, 255, 0.85);
+
+  box-shadow: 0 0 14px rgba(110, 255, 255, 0.10);
+  cursor: pointer;
+}
+
+/* Header (name bar) */
+.garage-saveHeader {
+  height: 42px;
+  padding: 0 12px 0 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 2px solid rgba(110, 255, 255, 0.18);
+}
+
+.garage-saveTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(235, 255, 255, 0.92);
+  text-shadow: 0 0 14px rgba(110, 255, 255, 0.16);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Body */
+.garage-saveBody {
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.garage-saveBodyText {
+  max-width: 82%;
+  text-align: center;
+  color: rgba(235, 255, 255, 0.85);
+  font-size: 20px;
+  font-style: italic;
+  line-height: 1.2;
+}
+
+/* Rename input */
+.garage-nameInput {
+  width: 100%;
+  height: 26px;
+  border-radius: 8px;
+  border: 1px solid rgba(110, 255, 255, 0.28);
+  background: rgba(0, 0, 0, 0.28);
+  color: rgba(235, 255, 255, 0.92);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0 10px;
+  outline: none;
+}
+
+.garage-empty {
+  margin-top: 14px;
+  color: rgba(235, 255, 255, 0.55);
+  font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .garage-row {
+    flex-wrap: wrap; /* kisebb kijelzőn törjön */
   }
-  body {
-    @apply bg-background text-foreground;
+  .garage-saveCard {
+    width: 260px;
   }
 }
+
+@media (max-width: 860px) {
+  .garage-content {
+    padding: 56px 18px 20px;
+    top: 108px;
+    flex-direction: column;
+  }
+
+  .garage-left {
+    width: 100%;
+    max-width: 520px;
+    flex: 0 0 auto;
+  }
+
+  .garage-right {
+    width: 100%;
+  }
+
+  .garage-searchWrap {
+    right: 18px;
+  }
+}
+
+@media (max-width: 520px) {
+  .garage-saveCard {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .garage-titlePill {
+    min-width: 170px;
+    padding: 0 18px;
+  }
+
+  .garage-searchWrap {
+    width: min(300px, calc(100vw - 120px));
+  }
+}
+
+
+/* =========================
+   CUSTOMIZE PAGE CSS START
+   ========================= */
+
+.customizePage {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.92);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+/* ===== Background built in code (no image) ===== */
+.customizeBg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(900px 600px at 50% 45%, rgba(52, 135, 255, 0.35), rgba(5, 14, 28, 0.95) 70%),
+    radial-gradient(900px 600px at 55% 100%, rgba(64, 220, 255, 0.18), rgba(2, 8, 18, 0.98) 75%),
+    linear-gradient(180deg, rgba(3, 12, 26, 0.95), rgba(3, 10, 20, 0.98));
+}
+
+.bgGlow {
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(circle at 55% 55%, rgba(120, 210, 255, 0.18), transparent 55%);
+  filter: blur(24px);
+}
+
+.bgGrid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.22;
+  background-image:
+    linear-gradient(rgba(120, 210, 255, 0.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 210, 255, 0.10) 1px, transparent 1px);
+  background-size: 80px 80px;
+  mask-image: radial-gradient(circle at 55% 55%, black 10%, transparent 60%);
+}
+
+.bgPanels .panel {
+  position: absolute;
+  border-radius: 18px;
+  border: 1px solid rgba(120, 210, 255, 0.22);
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  box-shadow: 0 0 0 1px rgba(10, 50, 120, 0.25) inset, 0 18px 70px rgba(0,0,0,0.35);
+  backdrop-filter: blur(6px);
+  opacity: 0.55;
+}
+
+.bgPanels .p1 { width: 260px; height: 140px; left: 6%; top: 18%; }
+.bgPanels .p2 { width: 320px; height: 170px; right: 8%; top: 16%; }
+.bgPanels .p3 { width: 280px; height: 150px; left: 10%; bottom: 16%; }
+.bgPanels .p4 { width: 360px; height: 190px; right: 10%; bottom: 12%; }
+
+.bgCeilingLights .tube {
+  position: absolute;
+  height: 10px;
+  width: 200px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(120, 210, 255, 0.55), transparent);
+  filter: blur(0.2px);
+  opacity: 0.65;
+}
+
+.bgCeilingLights .t1 { left: 16%; top: 10%; transform: rotate(-12deg); }
+.bgCeilingLights .t2 { left: 42%; top: 8%; transform: rotate(3deg); }
+.bgCeilingLights .t3 { right: 16%; top: 10%; transform: rotate(12deg); }
+.bgCeilingLights .t4 { left: 50%; top: 22%; width: 260px; transform: rotate(0deg); }
+
+.bgVignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 55% 55%, transparent 10%, rgba(0,0,0,0.55) 70%);
+}
+
+/* ===== Header ===== */
+.customizeTop{
+  position: relative;
+  z-index: 5;
+  height: 84px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 12px 18px;
+}
+
+.backBtn{
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  border: 1px solid rgba(120, 210, 255, 0.35);
+  background: rgba(10, 22, 44, 0.6);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.25) inset, 0 14px 40px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: transform 160ms ease;
+}
+.backBtn:active { transform: translateY(-50%) scale(0.96); }
+
+.backIcon {
+  font-size: 28px;
+  color: rgba(160, 230, 255, 0.95);
+  text-shadow: 0 0 18px rgba(64, 220, 255, 0.35);
+}
+
+.topTitlePill {
+  padding: 10px 22px;
+  border-radius: 14px;
+  border: 1px solid rgba(120, 210, 255, 0.35);
+  background: rgba(10, 22, 44, 0.55);
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.22) inset, 0 16px 60px rgba(0,0,0,0.35);
+}
+.topTitleText { font-weight: 700; letter-spacing: 0.2px; }
+
+/* ===== Main layout ===== */
+.customizeMain {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 18px;
+  padding: 0 18px 18px;
+  margin-top: 6px;
+  align-items: stretch;
+}
+
+.stageWrap { min-width: 0; }
+.rightPanel { min-width: 0; }
+
+.stageCard {
+  height: calc(100vh - 110px);
+  min-height: 520px;
+  border-radius: 22px;
+  border: 1px solid rgba(120, 210, 255, 0.25);
+  background: rgba(6, 14, 28, 0.55);
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.22) inset, 0 24px 80px rgba(0,0,0,0.45);
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+  position: relative;
+}
+
+.carStage{
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px;
+}
+
+
+/* 3D viewport wrapper (responsive) */
+.carViewerWrap{
+  flex: 1 1 auto;          /* ✅ a felső rész töltse ki a helyet */
+  min-height: 260px;       /* ✅ ne omoljon össze mobilon */
+  width: 100%;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+
+
+
+
+
+.carViewer3d{
+  width: 100%;
+  height: 100%;
+  border-radius: 22px;
+  border: 1px solid rgba(120, 210, 255, 0.18);
+  background: rgba(0,0,0,0);
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.20) inset;
+  overflow: hidden;
+  pointer-events: auto;
+
+  /* ✅ nagyon fontos: a nyilak abszolút pozíciója ehhez igazodjon */
+  position: relative;
+}
+
+/* ✅ KRITIKUS: a canvas töltse ki a teljes boxot (ez javítja a "felső világos sávot") */
+
+
+
+/* ✅ fix: canvas ne kapjon fehér hátteret */
+/* ✅ KRITIKUS: a canvas töltse ki a teljes boxot (ez javítja a "felső világos sávot") */
+.carViewer3d canvas{
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  background: transparent !important;
+}
+
+
+/* ✅ rotate arrows - side by side (A VIEWEREN BELÜL) */
+.overlayControls{
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 10px;
+  z-index: 6;
+}
+
+
+
+.dpadLR{
+  width: 90px;
+  height: 90px;
+  border-radius: 20px;
+  border: 1px solid rgba(120, 210, 255, 0.28);
+  background: rgba(10, 22, 44, 0.55);
+  color: rgba(170, 235, 255, 0.95);
+  font-size: 34px;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.18) inset, 0 18px 55px rgba(0,0,0,0.35);
+  cursor: pointer;
+  transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.dpadLR:active{ transform: scale(0.97); }
+.dpadLR:hover{
+  border-color: rgba(140, 235, 255, 0.55);
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.18) inset, 0 0 28px rgba(64, 220, 255, 0.16);
+}
+
+/* bottom buttons + select panel anchor */
+.bottomActions{
+  flex: 0 0 auto;          /* ✅ mindig alul marad */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: end;
+  position: relative;
+  padding-bottom: 4px;
+}
+
+
+.selectArea{ position: relative; }
+
+.wideAction {
+  height: 72px;
+  width: 100%;
+  border-radius: 18px;
+  border: 1px solid rgba(120, 210, 255, 0.25);
+  background: rgba(10, 22, 44, 0.6);
+  color: rgba(235, 250, 255, 0.92);
+  font-size: 18px;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.22) inset, 0 18px 70px rgba(0,0,0,0.45);
+  cursor: pointer;
+  transition: transform 160ms ease;
+}
+.wideAction:active { transform: scale(0.98); }
+
+/* Select car popup */
+.selectPanel{
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(72px + 12px);
+  border-radius: 18px;
+  border: 1px solid rgba(120, 210, 255, 0.25);
+  background: rgba(6, 14, 28, 0.78);
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.22) inset, 0 24px 80px rgba(0,0,0,0.55);
+  backdrop-filter: blur(10px);
+  padding: 14px;
+  z-index: 10;
+}
+
+.selectPanelTitle{
+  font-weight: 750;
+  margin-bottom: 10px;
+  color: rgba(210, 250, 255, 0.92);
+}
+
+.selectList{
+  display: grid;
+  gap: 8px;
+  max-height: 240px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.selectItem{
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(120, 210, 255, 0.18);
+  background: rgba(10, 22, 44, 0.45);
+  color: rgba(235, 250, 255, 0.92);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+}
+.selectItem:active{ transform: scale(0.99); }
+
+.selectItemFile{
+  opacity: 0.6;
+  font-size: 12px;
+}
+
+.selectItem.active{
+  border-color: rgba(140, 235, 255, 0.55);
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.18) inset, 0 0 26px rgba(64, 220, 255, 0.14);
+}
+
+.selectHint{
+  margin-top: 10px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* Right panel */
+.panelCard {
+  height: calc(100vh - 110px);
+  min-height: 520px;
+  border-radius: 22px;
+  border: 1px solid rgba(120, 210, 255, 0.25);
+  background: rgba(6, 14, 28, 0.55);
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.22) inset, 0 24px 80px rgba(0,0,0,0.45);
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+  display: grid;
+  align-content: start;
+}
+
+.menuItem { border-bottom: 1px solid rgba(120, 210, 255, 0.18); }
+
+.menuHeader {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 16px;
+  background: rgba(255,255,255,0.03);
+  color: rgba(235, 250, 255, 0.92);
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: 18px;
+}
+.menuHeader:hover { background: rgba(255,255,255,0.045); }
+
+.chev { width: 18px; opacity: 0.9; }
+.menuTitle { font-weight: 650; }
+.menuBody { padding: 12px 16px 16px; }
+
+.optionGrid { display: grid; gap: 10px; }
+.optionGrid.five { grid-template-columns: 1fr; }
+.optionGrid.two { grid-template-columns: 1fr 1fr; }
+
+.optionBtn {
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(120, 210, 255, 0.22);
+  background: rgba(10, 22, 44, 0.5);
+  color: rgba(235, 250, 255, 0.92);
+  cursor: pointer;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.18) inset;
+  transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+}
+.optionBtn:active { transform: scale(0.98); }
+
+.optionBtn.active {
+  border-color: rgba(140, 235, 255, 0.6);
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.22) inset, 0 0 35px rgba(64, 220, 255, 0.18);
+}
+
+/* Loading label (Canvas Html) */
+.glbLoading{
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(120,210,255,0.25);
+  background: rgba(6,14,28,0.72);
+  color: rgba(235,250,255,0.9);
+  font-size: 14px;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.20) inset, 0 18px 55px rgba(0,0,0,0.35);
+}
+
+.customizePage{
+  overflow-y: auto;     /* ✅ csak Customize oldalon scroll */
+  height: 100vh;
+}
+
+/* Bal nyíl-sáv + viewer oszlop */
+.stageGrid{
+  height: 100%;
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  align-items: center;
+  gap: 16px;
+}
+
+/* bal oldali oszlop a nyilaknak */
+.arrowsColumn{
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+
+/* jobb oldali oszlop: a model box kitölti */
+.viewerColumn{
+  height: 100%;
+  display: grid;
+}
+
+/* a nyilak ne legyenek absolute többé */
+.overlayControls{
+  position: static;
+  transform: none;
+  display: flex;
+  gap: 10px;
+  z-index: 6;
+}
+
+/* Responsive */
+@media (max-width: 980px) {
+  .customizeMain { grid-template-columns: 1fr; }
+
+  .panelCard { height: auto; min-height: unset; }
+  .stageCard { height: auto; min-height: 720px; }
+
+
+  .rightPanel { order: 2; }
+  .stageWrap { order: 1; }
+
+  
+}
+
+@media (max-width: 600px) {
+  .customizeTop { padding: 10px 12px; }
+  .backBtn { left: 12px; width: 54px; height: 54px; }
+
+  .stageCard { height: 74vh; min-height: 460px; }
+  .carStage { padding: 14px; }
+
+  .overlayControls {
+    left: 12px;
+    transform: translateY(-50%) scale(0.92);
+    transform-origin: left center;
+  }
+
+  .wideAction { height: 64px; font-size: 16px; }
+  .selectPanel{ bottom: calc(64px + 12px); }
+
+  .dpadLR{
+    width: 76px;
+    height: 76px;
+    font-size: 28px;
+    border-radius: 18px;
+  }
+}
+
+/* =========================
+   CUSTOMIZE PAGE CSS END
+   ========================= */
+
+

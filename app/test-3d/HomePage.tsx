@@ -173,11 +173,7 @@ export default function HomePage() {
               <span className="nav-label">Home</span>
             </button>
 
-            <button
-              className={`nav-item ${active === "Customize" ? "active" : ""}`}
-              onClick={() => setActive("Customize")}
-              type="button"
-            >
+
               <span className="nav-label">Customize</span>
             </button>
 

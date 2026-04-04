@@ -7,7 +7,6 @@ import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, Html, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
-import "../globals.css";
 
 import Garage from "./Garage";
 import Customize from "./Customize";

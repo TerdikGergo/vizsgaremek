@@ -1,7 +1,7 @@
 "use client";
 
 import React, { Suspense, useEffect, useMemo, useState } from "react";
-import "../../globals.css";
+
 
 import * as THREE from "three";
 import { Canvas, useThree } from "@react-three/fiber";

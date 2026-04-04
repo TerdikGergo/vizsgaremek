@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import "../../globals.css";
 
 type GarageProps = {
   onBack: () => void;

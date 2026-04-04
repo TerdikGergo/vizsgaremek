@@ -220,7 +220,7 @@ function Scene({ carUrl, theme }: { carUrl: string; theme: Theme }) {
   );
 }
 
-export default function HomePage({ onLogout }: { onLogout?: () => void }) {
+export default function HomePage() {
   const [active, setActive] = useState<Page>("Home");
   const [carUrl, setCarUrl] = useState<string>(DEFAULT_CAR_URL);
   const [theme, setTheme] = useState<Theme>("blue");
@@ -432,7 +432,6 @@ useEffect(() => {
               role="menuitem"
               onClick={() => {
                 setIsProfileMenuOpen(false);
-                onLogout?.();
               }}
             >
               Log Out

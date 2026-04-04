@@ -13,7 +13,7 @@ body {
   margin: 0;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   color: var(--text);
-  background: radial-gradient(1200px 700px at 50% 30%, #0f3f74 0%, var(--bg1) 55%, #040b14 100%);
+  background: #000;
   overflow: hidden;
 }
 
@@ -27,11 +27,11 @@ body {
   inset: 0;
   background:
     radial-gradient(700px 380px at 50% 25%, rgba(110, 231, 255, 0.18), transparent 55%),
-    radial-gradient(600px 340px at 60% 35%, rgba(74, 163, 255, 0.15), transparent 60%);
+    radial-gradient(600px 340px at 50% 31%, rgba(74, 163, 255, 0.15), transparent 60%);
   pointer-events: none;
 }
 
-/* ===== NAV ===== */
+
 
 .top-nav {
   position: relative;
@@ -170,7 +170,7 @@ body {
   .nav-links::-webkit-scrollbar { display: none; }
 }
 
-/* ===== STAGE / 3D ===== */
+
 
 .stage {
   position: relative;
@@ -210,11 +210,10 @@ body {
 }
 
 
-/* =================================================
-   GARAGE
-   ================================================= */
+/* 
+   GARAGE*/
 
-/* ✅ Shared back button style (használd Customize-on is ugyanígy) */
+
 .app-backBtn {
   position: absolute;
   top: 22px;
@@ -240,7 +239,7 @@ body {
   z-index: 20;
 }
 
-/* nincs hover effekt-kérés a kártyákra, de a gomb lehet stabilan ugyanaz */
+
 .app-backBtn:hover {
   background: rgba(0, 0, 0, 0.22);
 }
@@ -266,7 +265,7 @@ body {
   transform: translateY(-50%) rotate(45deg);
 }
 
-/* Title pill */
+
 .garage-titlePill {
   position: absolute;
   top: 24px;
@@ -302,7 +301,7 @@ body {
   text-shadow: 0 0 14px rgba(110, 255, 255, 0.18);
 }
 
-/* Search */
+
 .garage-searchWrap {
   position: absolute;
   right: 60px;
@@ -362,7 +361,7 @@ body {
   font-style: italic;
 }
 
-/* Layout */
+
 .garage-content {
   position: absolute;
   left: 0;
@@ -385,7 +384,7 @@ body {
   min-width: 0;
 }
 
-/* Left selected card */
+
 .garage-carCard {
   width: 100%;
   border-radius: 12px;
@@ -446,15 +445,15 @@ body {
   color: rgba(235, 255, 255, 0.50);
 }
 
-/* ✅ Right side: 1 sorban (3 kártya) */
+
 .garage-row {
   display: flex;
   gap: 18px;
   align-items: flex-start;
-  flex-wrap: nowrap; /* desktopon fix egy sor */
+  flex-wrap: nowrap; 
 }
 
-/* Saved card: hover ne csináljon semmit */
+
 .garage-saveCard {
   width: 260px;
   position: relative;
@@ -475,11 +474,11 @@ body {
 }
 
 .garage-saveCard:hover {
-  /* ✅ semmi */
+  
   transform: none;
 }
 
-/* ✅ selected: erős glow (mindig csak 1) */
+
 .garage-saveCard.isSelected {
   border-color: rgba(110, 255, 255, 0.60);
   box-shadow:
@@ -493,7 +492,7 @@ body {
   outline-offset: 4px;
 }
 
-/* Pencil */
+
 .garage-pencil {
   position: absolute;
   top: 10px;
@@ -533,7 +532,7 @@ body {
   max-width: 100%;
 }
 
-/* Body */
+
 .garage-saveBody {
   height: 150px;
   display: flex;
@@ -550,7 +549,7 @@ body {
   line-height: 1.2;
 }
 
-/* Rename input */
+
 .garage-nameInput {
   width: 100%;
   height: 26px;
@@ -570,10 +569,10 @@ body {
   font-size: 14px;
 }
 
-/* Responsive */
+
 @media (max-width: 1100px) {
   .garage-row {
-    flex-wrap: wrap; /* kisebb kijelzőn törjön */
+    flex-wrap: wrap; 
   }
   .garage-saveCard {
     width: 260px;
@@ -619,19 +618,27 @@ body {
 }
 
 
-/* =========================
-   CUSTOMIZE PAGE CSS START
-   ========================= */
+/* 
+   CUSTOMIZE PAGE CSS START */
 
 .customizePage {
   position: relative;
-  min-height: 100vh;
-  overflow: hidden;
+  height: 100vh;       
+  overflow: hidden;    
   color: rgba(255, 255, 255, 0.92);
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
 
-/* ===== Background built in code (no image) ===== */
+
+@media (max-width: 980px){
+  .customizePage{
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+  }
+}
+
+
 .customizeBg {
   position: absolute;
   inset: 0;
@@ -696,7 +703,7 @@ body {
   background: radial-gradient(circle at 55% 55%, transparent 10%, rgba(0,0,0,0.55) 70%);
 }
 
-/* ===== Header ===== */
+
 .customizeTop{
   position: relative;
   z-index: 5;
@@ -725,11 +732,19 @@ body {
 }
 .backBtn:active { transform: translateY(-50%) scale(0.96); }
 
-.backIcon {
+.backBtn::before {
+  content: "\2190";
   font-size: 28px;
+  line-height: 1;
   color: rgba(160, 230, 255, 0.95);
   text-shadow: 0 0 18px rgba(64, 220, 255, 0.35);
 }
+
+.backIcon {
+  display: none !important;
+}
+
+
 
 .topTitlePill {
   padding: 10px 22px;
@@ -740,7 +755,7 @@ body {
 }
 .topTitleText { font-weight: 700; letter-spacing: 0.2px; }
 
-/* ===== Main layout ===== */
+
 .customizeMain {
   position: relative;
   z-index: 2;
@@ -757,13 +772,13 @@ body {
 
 .stageCard {
   height: calc(100vh - 110px);
+  height: calc(100dvh - 110px);
   min-height: 520px;
   border-radius: 22px;
   border: 1px solid rgba(120, 210, 255, 0.25);
   background: rgba(6, 14, 28, 0.55);
   box-shadow: 0 0 0 2px rgba(0,0,0,0.22) inset, 0 24px 80px rgba(0,0,0,0.45);
   backdrop-filter: blur(8px);
-  overflow: hidden;
   position: relative;
 }
 
@@ -774,16 +789,19 @@ body {
   flex-direction: column;
   gap: 16px;
   padding: 22px;
+  min-height: 0;
+  height: 100%;
 }
 
 
-/* 3D viewport wrapper (responsive) */
+
+
 .carViewerWrap{
-  flex: 1 1 auto;          /* ✅ a felső rész töltse ki a helyet */
-  min-height: 260px;       /* ✅ ne omoljon össze mobilon */
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 0;  
   width: 100%;
-  display: grid;
-  place-items: center;
+  display: block; 
   pointer-events: none;
 }
 
@@ -795,6 +813,7 @@ body {
 .carViewer3d{
   width: 100%;
   height: 100%;
+  min-height: 0;
   border-radius: 22px;
   border: 1px solid rgba(120, 210, 255, 0.18);
   background: rgba(0,0,0,0);
@@ -802,16 +821,16 @@ body {
   overflow: hidden;
   pointer-events: auto;
 
-  /* ✅ nagyon fontos: a nyilak abszolút pozíciója ehhez igazodjon */
+ 
   position: relative;
 }
 
-/* ✅ KRITIKUS: a canvas töltse ki a teljes boxot (ez javítja a "felső világos sávot") */
 
 
 
-/* ✅ fix: canvas ne kapjon fehér hátteret */
-/* ✅ KRITIKUS: a canvas töltse ki a teljes boxot (ez javítja a "felső világos sávot") */
+
+
+
 .carViewer3d canvas{
   width: 100% !important;
   height: 100% !important;
@@ -820,16 +839,6 @@ body {
 }
 
 
-/* ✅ rotate arrows - side by side (A VIEWEREN BELÜL) */
-.overlayControls{
-  position: absolute;
-  left: 18px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  gap: 10px;
-  z-index: 6;
-}
 
 
 
@@ -852,9 +861,9 @@ body {
   box-shadow: 0 0 0 2px rgba(0,0,0,0.18) inset, 0 0 28px rgba(64, 220, 255, 0.16);
 }
 
-/* bottom buttons + select panel anchor */
+
 .bottomActions{
-  flex: 0 0 auto;          /* ✅ mindig alul marad */
+  flex: 0 0 auto;          
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
@@ -880,7 +889,7 @@ body {
 }
 .wideAction:active { transform: scale(0.98); }
 
-/* Select car popup */
+
 .selectPanel{
   position: absolute;
   left: 0;
@@ -940,16 +949,17 @@ body {
   opacity: 0.8;
 }
 
-/* Right panel */
+
 .panelCard {
   height: calc(100vh - 110px);
+  height: calc(100dvh - 110px);
   min-height: 520px;
   border-radius: 22px;
   border: 1px solid rgba(120, 210, 255, 0.25);
   background: rgba(6, 14, 28, 0.55);
   box-shadow: 0 0 0 2px rgba(0,0,0,0.22) inset, 0 24px 80px rgba(0,0,0,0.45);
   backdrop-filter: blur(8px);
-  overflow: hidden;
+  
   display: grid;
   align-content: start;
 }
@@ -996,7 +1006,7 @@ body {
   box-shadow: 0 0 0 2px rgba(0,0,0,0.22) inset, 0 0 35px rgba(64, 220, 255, 0.18);
 }
 
-/* Loading label (Canvas Html) */
+
 .glbLoading{
   padding: 10px 14px;
   border-radius: 12px;
@@ -1007,52 +1017,80 @@ body {
   box-shadow: 0 0 0 2px rgba(0,0,0,0.20) inset, 0 18px 55px rgba(0,0,0,0.35);
 }
 
-.customizePage{
-  overflow-y: auto;     /* ✅ csak Customize oldalon scroll */
-  height: 100vh;
+body.theme-mono .glbLoading{
+  border: 1px solid rgba(255,255,255,0.24);
+  background: rgba(0,0,0,0.92);
+  color: rgba(255,255,255,0.96);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06) inset,
+    0 18px 55px rgba(0,0,0,0.45);
 }
 
-/* Bal nyíl-sáv + viewer oszlop */
+
+
+
 .stageGrid{
-  height: 100%;
+  flex: 1 1 auto;   
+  min-height: 0;    
   display: grid;
   grid-template-columns: 140px 1fr;
-  align-items: center;
-  gap: 16px;
+  gap: 72px;
+  align-items: stretch; 
 }
 
-/* bal oldali oszlop a nyilaknak */
 .arrowsColumn{
   height: 100%;
   display: grid;
   place-items: center;
+  padding-right: 10px; 
 }
 
-/* jobb oldali oszlop: a model box kitölti */
 .viewerColumn{
+  min-width: 0;
+  min-height: 0;
   height: 100%;
   display: grid;
 }
 
-/* a nyilak ne legyenek absolute többé */
 .overlayControls{
   position: static;
-  transform: none;
+  transform: translateY(18px); 
   display: flex;
   gap: 10px;
   z-index: 6;
 }
 
-/* Responsive */
+
 @media (max-width: 980px) {
   .customizeMain { grid-template-columns: 1fr; }
 
   .panelCard { height: auto; min-height: unset; }
-  .stageCard { height: auto; min-height: 720px; }
+      
+  
 
 
   .rightPanel { order: 2; }
   .stageWrap { order: 1; }
+
+  .customizePage{
+    height: auto !important;
+    min-height: 100vh;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .customizeMain{
+    height: auto;              /* ✅ page nőhet */
+    padding-bottom: 140px;     /* ✅ legyen hely a legaljára görgetni */
+  }
+
+  .stageCard{
+    height: calc(100vh - 110px);
+    height: calc(100dvh - 110px);
+    min-height: 720px;
+  }
+
+  
 
   
 }
@@ -1064,25 +1102,2820 @@ body {
   .stageCard { height: 74vh; min-height: 460px; }
   .carStage { padding: 14px; }
 
-  .overlayControls {
-    left: 12px;
-    transform: translateY(-50%) scale(0.92);
-    transform-origin: left center;
-  }
-
+  
   .wideAction { height: 64px; font-size: 16px; }
   .selectPanel{ bottom: calc(64px + 12px); }
 
   .dpadLR{
-    width: 76px;
-    height: 76px;
-    font-size: 28px;
+    width: 76px;      
+    height: 76px;     
+    font-size: 28px;  
     border-radius: 18px;
+    border: 1px solid rgba(120, 210, 255, 0.28);
+    background: rgba(10, 22, 44, 0.55);
+    color: rgba(170, 235, 255, 0.95);
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.18) inset, 0 18px 55px rgba(0,0,0,0.35);
+    cursor: pointer;
+    transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+  }
+
+  
+  .stageGrid{
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 150px;
+    align-items: stretch;
+  }
+
+  .viewerColumn{ grid-row: 1; }
+  .arrowsColumn{ grid-row: 2; }
+
+  .overlayControls{
+    justify-content: center;
   }
 }
 
-/* =========================
-   CUSTOMIZE PAGE CSS END
-   ========================= */
+/* 
+   CUSTOMIZE PAGE CSS END  */
 
 
+
+
+/* 
+   ENGINE PAGE CSS START
+    */
+
+.enginePage {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.92);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+
+
+.engineMain{
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: start center;
+  padding: 6px 18px 18px;
+}
+
+.engineChoicePill{
+  width: min(980px, 94vw);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  padding: 10px;
+  border-radius: 16px;
+
+  border: 1px solid rgba(120, 210, 255, 0.30);
+  background: rgba(4, 14, 26, 0.30);
+  backdrop-filter: blur(10px);
+
+  box-shadow:
+    0 0 0 1px rgba(74, 163, 255, 0.10) inset,
+    0 10px 30px rgba(0, 0, 0, 0.35),
+    0 0 22px rgba(110, 231, 255, 0.10);
+
+  position: relative;
+  overflow: hidden;
+}
+
+.engineChoicePill::before,
+.engineChoicePill::after{
+  content:"";
+  position:absolute;
+  top:0; bottom:0;
+  width:140px;
+  background: linear-gradient(90deg, transparent, rgba(110, 231, 255, 0.22), transparent);
+  transform: skewX(-25deg);
+  opacity: 0.55;
+  pointer-events:none;
+}
+.engineChoicePill::before{ left: 140px; }
+.engineChoicePill::after { left: 420px; opacity: 0.30; }
+
+.engineChoiceBtn + .engineChoiceBtn{
+  border-left: 1px solid rgba(120, 210, 255, 0.18);
+}
+
+.engineChoiceBtn{
+  height: 58px;
+  border: 0;
+  border-radius: 14px;
+  background: rgba(10, 22, 44, 0.30);
+  color: rgba(234, 246, 255, 0.78);
+
+  font-size: clamp(14px, 1.6vw, 20px);
+  font-style: italic;
+  letter-spacing: 0.2px;
+
+  cursor: pointer;
+  transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease, background 140ms ease, color 140ms ease;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.18) inset;
+}
+
+.engineChoiceBtn:hover{
+  color: rgba(235, 250, 255, 0.92);
+  background: rgba(10, 22, 44, 0.45);
+  box-shadow:
+    0 0 0 2px rgba(0,0,0,0.18) inset,
+    0 0 28px rgba(64, 220, 255, 0.16);
+  transform: translateY(-1px);
+}
+
+.engineChoiceBtn:active{
+  transform: translateY(0px) scale(0.99);
+}
+
+.engineChoiceBtn.active{
+  color: rgba(235, 250, 255, 0.92);
+  border-color: rgba(140, 235, 255, 0.6);
+  box-shadow:
+    0 0 0 2px rgba(0,0,0,0.22) inset,
+    0 0 35px rgba(64, 220, 255, 0.18);
+  background: rgba(10, 22, 44, 0.52);
+}
+
+.engineHelpWrap {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 12;
+}
+
+.engineCornerHelpBtn {
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  border: 1px solid rgba(120, 210, 255, 0.35);
+  background: rgba(10, 22, 44, 0.6);
+  color: rgba(160, 230, 255, 0.95);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: 30px;
+  line-height: 1;
+  text-align: center;
+  padding: 0;
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.25) inset,
+    0 14px 40px rgba(0, 0, 0, 0.45);
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.engineCornerHelpBtn:active {
+  transform: scale(0.96);
+}
+
+.engineHelpBubble {
+  top: calc(100% + 12px);
+  right: 0;
+  width: min(500px, 62vw);
+  border-radius: 16px;
+  pointer-events: auto;
+  position: absolute;
+}
+
+.engineHelpBubble::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  right: 20px;
+  width: 14px;
+  height: 14px;
+  transform: rotate(45deg);
+  background: rgba(4, 14, 26, 0.62);
+  border-left: 1px solid rgba(110, 231, 255, 0.35);
+  border-top: 1px solid rgba(110, 231, 255, 0.35);
+}
+
+body.theme-blue .engineCornerHelpBtn:hover,
+body.theme-blue .engineCornerHelpBtn:focus {
+  border-color: rgba(140, 235, 255, 0.55) !important;
+  background: rgba(12, 28, 52, 0.72) !important;
+  box-shadow:
+    0 0 0 2px rgba(0,0,0,0.18) inset,
+    0 0 22px rgba(64, 220, 255, 0.16),
+    0 14px 40px rgba(0, 0, 0, 0.45) !important;
+  transform: translateY(-50%) translateY(-1px);
+}
+
+body.theme-blue .engineCornerHelpBtn {
+  text-shadow: 0 0 18px rgba(64, 220, 255, 0.35);
+}
+
+body.theme-blue .engineCornerHelpBtn:hover,
+body.theme-blue .engineCornerHelpBtn:focus {
+  color: rgba(235, 250, 255, 0.98) !important;
+  text-shadow:
+    0 0 10px rgba(110, 231, 255, 0.55),
+    0 0 22px rgba(74, 163, 255, 0.25) !important;
+}
+
+body.theme-mono .engineCornerHelpBtn {
+  border: 1px solid rgba(255, 255, 255, 0.34) !important;
+  background: transparent !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.05) inset,
+    0 0 16px rgba(255,255,255,0.06) !important;
+}
+
+body.theme-mono .engineCornerHelpBtn:hover,
+body.theme-mono .engineCornerHelpBtn:focus,
+body.theme-mono .engineCornerHelpBtn:active {
+  border-color: rgba(255, 255, 255, 0.46) !important;
+  background: transparent !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.07) inset,
+    0 0 18px rgba(255,255,255,0.09) !important;
+}
+
+body.theme-mono .engineCornerHelpBtn {
+  color: rgba(255, 255, 255, 0.96) !important;
+}
+
+body.theme-mono .engineHelpBubble::before {
+  background: rgba(0, 0, 0, 0.62);
+  border-left-color: rgba(255, 255, 255, 0.35);
+  border-top-color: rgba(255, 255, 255, 0.35);
+}
+
+body.theme-mono .engineHelpBubble {
+  top: calc(100% + 28px);
+}
+
+@media (max-width: 600px){
+  .engineMain{ padding: 6px 12px 18px; }
+  .engineChoicePill{ width: 96vw; padding: 8px; }
+  .engineChoiceBtn{ height: 54px; font-size: 16px; }
+}
+
+/* 
+   ENGINE PAGE CSS END
+    */
+
+/*Diesel/Gasoline , Hybrid Start */
+
+.fuelPageRoot {
+  position: relative;
+  width: 100%;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+.fuelLayout {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1680px;
+  margin: 0 auto;
+  height: 100dvh;
+  min-height: 100dvh;
+  padding: clamp(10px, 1vw, 16px);
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, 1.34fr) clamp(360px, 26vw, 480px);
+  gap: clamp(12px, 1vw, 18px);
+  overflow: hidden;
+  align-items: stretch;
+}
+
+
+
+.fuelLeft {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 12px;
+}
+
+.fuelTop {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: clamp(48px, 4vw, 60px) minmax(0, 1fr) clamp(48px, 4vw, 60px);
+  gap: 12px;
+  align-items: center;
+}
+
+.fuelIconBtn {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 999px;
+  border: 1px solid rgba(110, 231, 255, 0.32);
+  background: rgba(4, 14, 26, 0.35);
+  color: var(--text);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: clamp(22px, 2vw, 28px);
+  box-shadow:
+    0 0 0 1px rgba(74, 163, 255, 0.12) inset,
+    0 10px 28px rgba(0, 0, 0, 0.35),
+    0 0 18px rgba(110, 231, 255, 0.12);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.fuelIconBtn:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 22px rgba(110, 231, 255, 0.22),
+    0 0 34px rgba(74, 163, 255, 0.14);
+}
+
+.fuelTitlePill {
+  min-width: 0;
+  min-height: clamp(54px, 4.5vw, 68px);
+  border-radius: 24px;
+  border: 1px solid rgba(110, 231, 255, 0.35);
+  background: rgba(4, 14, 26, 0.35);
+  backdrop-filter: blur(10px);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  position: relative;
+  padding: 0 18px;
+  box-shadow:
+    0 0 0 1px rgba(74, 163, 255, 0.12) inset,
+    0 10px 30px rgba(0, 0, 0, 0.35),
+    0 0 22px rgba(110, 231, 255, 0.12);
+}
+
+.fuelTitlePill::before,
+.fuelTitlePill::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 160px;
+  background: linear-gradient(90deg, transparent, rgba(110, 231, 255, 0.22), transparent);
+  transform: skewX(-25deg);
+  pointer-events: none;
+}
+
+.fuelTitlePill::before {
+  left: 22%;
+  opacity: 0.55;
+}
+
+.fuelTitlePill::after {
+  left: 52%;
+  opacity: 0.3;
+}
+
+.fuelTitlePill span {
+  font-size: clamp(22px, 2.2vw, 44px);
+  line-height: 1;
+  text-align: center;
+  text-shadow:
+    0 0 10px rgba(110, 231, 255, 0.55),
+    0 0 22px rgba(74, 163, 255, 0.25);
+}
+
+.fuelMainCard {
+  min-width: 0;
+  min-height: 0;
+  border-radius: 28px;
+  border: 1px solid rgba(110, 231, 255, 0.28);
+  background: rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  box-shadow:
+    0 0 0 1px rgba(74, 163, 255, 0.10) inset,
+    0 18px 50px rgba(0, 0, 0, 0.55),
+    0 0 26px rgba(110, 231, 255, 0.10);
+}
+
+.fuelStage {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.fuelStage::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 60%;
+  width: min(760px, 80%);
+  height: min(430px, 64%);
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    circle at 50% 52%,
+    rgba(74, 163, 255, 0.22),
+    rgba(110, 231, 255, 0.08) 45%,
+    rgba(0, 0, 0, 0) 72%
+  );
+  filter: blur(12px);
+  opacity: 0.74;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.fuelStage canvas {
+  position: relative;
+  z-index: 1;
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+
+
+.materialsOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(0, 6, 14, 0.97);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+.materialsOverlayCard {
+  width: min(1120px, 96%);
+  max-width: 100%;
+  height: min(700px, calc(100% - 6px));
+  max-height: calc(100% - 6px);
+  border-radius: 28px;
+  border: 1px solid rgba(110, 231, 255, 0.35);
+  background: rgba(4, 14, 26, 0.45);
+  box-shadow:
+    0 0 0 1px rgba(74, 163, 255, 0.12) inset,
+    0 20px 60px rgba(0, 0, 0, 0.6),
+    0 0 26px rgba(110, 231, 255, 0.14);
+  padding: 22px;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  gap: 14px;
+  overflow: hidden;
+}
+
+.materialsOverlayTitle {
+  margin: 0;
+  font-size: clamp(22px, 2vw, 34px);
+  line-height: 1.1;
+  text-shadow:
+    0 0 12px rgba(110, 231, 255, 0.55),
+    0 0 26px rgba(74, 163, 255, 0.22);
+}
+
+.materialsOverlayText {
+  margin: 0;
+  color: rgba(234, 246, 255, 0.82);
+  font-size: clamp(14px, 1vw, 18px);
+  line-height: 1.45;
+}
+
+.matGrid {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.matPartCard {
+  min-width: 0;
+  border-radius: 22px;
+  border: 1px solid rgba(110, 231, 255, 0.28);
+  background: rgba(0, 0, 0, 0.18);
+  box-shadow:
+    0 0 0 1px rgba(74, 163, 255, 0.10) inset,
+    0 12px 34px rgba(0, 0, 0, 0.42),
+    0 0 18px rgba(110, 231, 255, 0.08);
+  padding: 14px;
+  overflow: visible;
+}
+
+.matPartCardBottom {
+  grid-column: span 2;
+}
+
+.matPartTitle {
+  margin-bottom: 10px;
+  font-size: clamp(16px, 1vw, 22px);
+  line-height: 1.2;
+  color: rgba(234, 246, 255, 0.96);
+  text-shadow: 0 0 10px rgba(110, 231, 255, 0.35);
+}
+
+.matOptions {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  overflow: visible;
+}
+
+.matOptRow {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.matOptRow input {
+  opacity: 0;
+  position: absolute;
+  pointer-events: none;
+}
+
+.matRadio {
+  width: 14px;
+  height: 14px;
+  min-width: 14px;
+  flex: 0 0 14px;
+  margin-top: 3px;
+  border-radius: 999px;
+  border: 1px solid rgba(110, 231, 255, 0.45);
+  box-shadow: 0 0 12px rgba(110, 231, 255, 0.10);
+  position: relative;
+}
+
+.matRadio.on::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: 999px;
+  background: rgba(110, 231, 255, 0.95);
+  box-shadow: 0 0 12px rgba(110, 231, 255, 0.65);
+}
+
+.matOptLabel {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  color: rgba(234, 246, 255, 0.88);
+  font-size: clamp(13px, 0.82vw, 16px);
+  line-height: 1.32;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+
+.matActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+
+
+.fuelButtonsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  padding: 16px;
+  border-top: 1px solid rgba(110, 231, 255, 0.18);
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.fuelBtn {
+  min-width: 0;
+  height: clamp(52px, 4vw, 64px);
+  border-radius: 20px;
+  border: 1px solid rgba(110, 231, 255, 0.35);
+  background: rgba(4, 14, 26, 0.35);
+  color: rgba(234, 246, 255, 0.92);
+  cursor: pointer;
+  font-size: clamp(16px, 1.1vw, 24px);
+  letter-spacing: 0.2px;
+  box-shadow:
+    0 0 0 1px rgba(74, 163, 255, 0.10) inset,
+    0 10px 30px rgba(0, 0, 0, 0.35),
+    0 0 18px rgba(110, 231, 255, 0.10);
+  transition: transform 160ms ease, box-shadow 160ms ease, text-shadow 160ms ease;
+}
+
+.fuelBtn:hover {
+  transform: translateY(-1px);
+  text-shadow:
+    0 0 10px rgba(110, 231, 255, 0.55),
+    0 0 22px rgba(74, 163, 255, 0.25);
+}
+
+.fuelBtn.active {
+  border-color: rgba(110, 231, 255, 0.65);
+}
+
+.fuelBtnPrimary {
+  background: rgba(10, 40, 70, 0.35);
+}
+
+
+
+.fuelRight {
+  min-width: 0;
+  min-height: 0;
+  border-radius: 28px;
+  border: 1px solid rgba(110, 231, 255, 0.22);
+  background: rgba(0, 0, 0, 0.25);
+  box-shadow:
+    0 0 0 1px rgba(74, 163, 255, 0.10) inset,
+    0 18px 50px rgba(0, 0, 0, 0.55),
+    0 0 22px rgba(110, 231, 255, 0.08);
+  overflow: hidden;
+  display: grid;
+}
+
+.fuelCharts {
+  height: 100%;
+  min-height: 0;
+  padding: 12px;
+  display: grid;
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  overflow: hidden;
+}
+
+.chartCard {
+  min-width: 0;
+  min-height: 0;
+  border-radius: 22px;
+  border: 1px solid rgba(110, 231, 255, 0.28);
+  background: rgba(4, 14, 26, 0.35);
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto minmax(190px, 1fr);
+}
+
+.chartTop {
+  padding: 7px;
+  border-bottom: 1px solid rgba(110, 231, 255, 0.14);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.chartTopRow {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 7px;
+  align-items: center;
+}
+
+.chartSelect {
+  width: 100%;
+  min-width: 0;
+  height: clamp(30px, 2.2vw, 40px);
+  border-radius: 13px;
+  border: 1px solid rgba(110, 231, 255, 0.28);
+  background: rgba(0, 0, 0, 0.28);
+  color: rgba(234, 246, 255, 0.95);
+  padding: 0 11px;
+  outline: none;
+  font-size: clamp(12px, 0.8vw, 15px);
+}
+
+.chartValuePill {
+  height: clamp(30px, 2.2vw, 40px);
+  min-width: clamp(58px, 4.5vw, 88px);
+  max-width: 100%;
+  padding: 0 11px;
+  border-radius: 13px;
+  border: 1px solid rgba(110, 231, 255, 0.28);
+  background: rgba(0, 0, 0, 0.28);
+  display: grid;
+  place-items: center;
+  color: rgba(234, 246, 255, 0.92);
+  font-size: clamp(12px, 0.8vw, 15px);
+  white-space: nowrap;
+}
+
+.chartBody {
+  min-width: 0;
+  min-height: 0;
+  padding: 12px 16px 10px 16px;
+  display: grid;
+  overflow: visible;
+}
+
+.chartSvg {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: block;
+  border-radius: 16px;
+  border: 1px solid rgba(110, 231, 255, 0.14);
+  background:
+    linear-gradient(rgba(110, 231, 255, 0.06), rgba(110, 231, 255, 0.02)),
+    rgba(0, 0, 0, 0.25);
+}
+
+.chartPlaceholder {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: block;
+  border-radius: 16px;
+  border: 1px solid rgba(110, 231, 255, 0.14);
+  background:
+    linear-gradient(rgba(110, 231, 255, 0.06), rgba(110, 231, 255, 0.02)),
+    rgba(0, 0, 0, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.chartPlaceholderLine {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: rgba(110, 231, 255, 0.10);
+}
+
+.chartPlaceholderLine:nth-child(1) {
+  top: 25%;
+}
+
+.chartPlaceholderLine:nth-child(2) {
+  top: 50%;
+}
+
+.chartPlaceholderLine:nth-child(3) {
+  top: 75%;
+}
+
+.chartPlaceholderWave {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: 22%;
+  height: 2px;
+  background: rgba(110, 231, 255, 0.55);
+  filter: drop-shadow(0 0 10px rgba(110, 231, 255, 0.35));
+  transform: skewX(-18deg);
+  opacity: 0.8;
+}
+
+.chartGridLine {
+  stroke: rgba(255, 255, 255, 0.10);
+  stroke-width: 1;
+}
+
+.chartAxisStrong {
+  stroke: rgba(255, 255, 255, 0.22);
+  stroke-width: 1.2;
+}
+
+.chartTickText {
+  fill: rgba(255, 255, 255, 0.78);
+  font-size: 9px;
+}
+
+.chartPath {
+  stroke: rgba(110, 231, 255, 0.95);
+  stroke-width: 2.2;
+  filter: drop-shadow(0 0 10px rgba(110, 231, 255, 0.35));
+}
+
+.chartGlowDot {
+  fill: rgba(110, 231, 255, 0.98);
+  filter:
+    drop-shadow(0 0 10px rgba(110, 231, 255, 0.8))
+    drop-shadow(0 0 18px rgba(74, 163, 255, 0.35));
+}
+
+.fuelHelpBubble {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: min(380px, 36vw);
+  padding: 14px;
+  border: 1px solid rgba(110, 231, 255, 0.35);
+  background: rgba(4, 14, 26, 0.62);
+  backdrop-filter: blur(10px);
+  border-radius: 18px 6px 18px 18px;
+  color: rgba(234, 246, 255, 0.92);
+  font-size: clamp(13px, 0.9vw, 16px);
+  line-height: 1.35;
+  z-index: 60;
+  pointer-events: none;
+  box-shadow:
+    0 0 0 1px rgba(74, 163, 255, 0.12) inset,
+    0 16px 44px rgba(0, 0, 0, 0.55),
+    0 0 22px rgba(110, 231, 255, 0.14);
+}
+
+
+
+@media (min-width: 1261px) and (min-height: 761px) {
+  .fuelLayout {
+    grid-template-columns: minmax(0, 1.31fr) clamp(372px, 26.5vw, 488px);
+    gap: 16px;
+  }
+
+  .fuelCharts {
+    padding: 14px;
+    gap: 14px;
+  }
+
+  .chartCard {
+    grid-template-rows: auto minmax(194px, 1fr);
+  }
+
+  .chartTop {
+    padding: 8px;
+  }
+
+  .chartBody {
+    padding: 12px 18px 10px 18px;
+  }
+
+  .chartSvg,
+  .chartPlaceholder {
+    min-height: 186px;
+  }
+
+  .chartTickText {
+    font-size: 9px;
+  }
+}
+
+
+
+@media (max-width: 1260px), (max-height: 760px) {
+  .fuelPageRoot {
+    overflow-y: auto;
+  }
+
+  .fuelLayout {
+    height: auto;
+    min-height: 100dvh;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    overflow: visible;
+  }
+
+  .fuelStage {
+    min-height: 420px;
+  }
+
+  .fuelRight {
+    overflow: visible;
+  }
+
+  .fuelCharts {
+    height: auto;
+    grid-template-rows: none;
+    grid-auto-rows: minmax(240px, auto);
+    overflow: visible;
+  }
+
+  .chartCard {
+    min-height: 240px;
+  }
+
+  .chartSvg,
+  .chartPlaceholder {
+    min-height: 165px;
+  }
+}
+
+
+@media (max-width: 980px) {
+  .fuelPageRoot {
+    overflow-y: auto;
+  }
+
+  .fuelLayout {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .fuelStage {
+    min-height: 360px;
+  }
+
+  .fuelButtonsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .materialsOverlay {
+    padding: 12px;
+    align-items: start;
+  }
+
+  .materialsOverlayCard {
+    width: 100%;
+    height: auto;
+    max-height: calc(100dvh - 24px);
+    padding: 16px;
+  }
+
+  .matGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .matPartCardBottom {
+    grid-column: span 1;
+  }
+
+  .chartTop {
+    padding: 8px;
+  }
+
+  .chartSelect,
+  .chartValuePill {
+    height: 38px;
+    font-size: 13px;
+  }
+}
+
+
+@media (max-width: 760px) {
+  .fuelPageRoot {
+    overflow-y: auto;
+  }
+
+  .fuelLayout {
+    height: auto;
+    min-height: 100dvh;
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .fuelTop {
+    grid-template-columns: 46px minmax(0, 1fr) 46px;
+    gap: 10px;
+  }
+
+  .fuelTitlePill {
+    min-height: 54px;
+    border-radius: 22px;
+  }
+
+  .fuelTitlePill span {
+    font-size: clamp(18px, 6vw, 28px);
+  }
+
+  .fuelStage {
+    min-height: 300px;
+  }
+
+  .fuelButtonsGrid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .fuelBtn {
+    height: 56px;
+    font-size: 16px;
+  }
+
+  .chartCard {
+    min-height: 220px;
+  }
+
+  .chartTopRow {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .chartSelect,
+  .chartValuePill {
+    height: 36px;
+    font-size: 12px;
+  }
+
+  .chartValuePill {
+    width: fit-content;
+    min-width: 0;
+    justify-self: start;
+  }
+
+  .chartSvg,
+  .chartPlaceholder {
+    min-height: 150px;
+  }
+
+  .materialsOverlay {
+    position: fixed;
+    inset: 0;
+    padding: 8px;
+    overflow-y: auto;
+    align-items: start;
+  }
+
+  .materialsOverlayCard {
+    width: 100%;
+    min-height: calc(100dvh - 16px);
+    height: auto;
+    max-height: none;
+    border-radius: 20px;
+    padding: 14px;
+    overflow: visible;
+  }
+
+  .materialsOverlayTitle {
+    font-size: 18px;
+  }
+
+  .materialsOverlayText {
+    font-size: 13px;
+  }
+
+  .matGrid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    overflow: visible;
+  }
+
+  .matPartCard {
+    padding: 12px;
+  }
+
+  .matPartTitle {
+    font-size: 15px;
+  }
+
+  .matOptLabel {
+    font-size: 13px;
+    line-height: 1.3;
+  }
+
+  .matActions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .matActions .fuelBtn {
+    width: 100%;
+  }
+}
+
+
+@media (max-width: 560px) {
+  .fuelPageRoot {
+    overflow-y: auto;
+  }
+
+  .fuelLayout {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .fuelTop {
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+    gap: 8px;
+  }
+
+  .fuelIconBtn {
+    font-size: 20px;
+  }
+
+  .fuelTitlePill {
+    min-height: 48px;
+    border-radius: 20px;
+    padding: 0 10px;
+  }
+
+  .fuelTitlePill span {
+    font-size: 17px;
+  }
+
+  .fuelMainCard,
+  .fuelRight {
+    border-radius: 22px;
+  }
+
+  .fuelStage {
+    min-height: 250px;
+  }
+
+  .fuelButtonsGrid {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .fuelBtn {
+    height: 50px;
+    font-size: 15px;
+    border-radius: 16px;
+  }
+
+  .fuelCharts {
+    padding: 8px;
+    gap: 8px;
+    grid-auto-rows: minmax(205px, auto);
+  }
+
+  .chartCard {
+    min-height: 205px;
+    border-radius: 18px;
+  }
+
+  .chartTop {
+    padding: 6px;
+  }
+
+  .chartTopRow {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .chartSelect {
+    height: 34px;
+    border-radius: 12px;
+    font-size: 11px;
+    padding: 0 10px;
+  }
+
+  .chartValuePill {
+    height: 34px;
+    border-radius: 12px;
+    font-size: 11px;
+    padding: 0 10px;
+    width: fit-content;
+    min-width: 0;
+    max-width: 100%;
+    justify-self: start;
+  }
+
+  .chartBody {
+    padding: 5px;
+  }
+
+  .chartSvg,
+  .chartPlaceholder {
+    min-height: 142px;
+    border-radius: 12px;
+  }
+
+  .chartTickText {
+    font-size: 7px;
+  }
+
+  .fuelHelpBubble {
+    width: min(90vw, 320px);
+    top: 10px;
+    right: 10px;
+    font-size: 12px;
+  }
+
+  .materialsOverlay {
+    position: fixed;
+    inset: 0;
+    padding: 8px;
+    overflow-y: auto;
+  }
+
+  .materialsOverlayCard {
+    width: 100%;
+    min-height: calc(100dvh - 16px);
+    height: auto;
+    padding: 12px;
+    gap: 10px;
+    border-radius: 18px;
+  }
+
+  .materialsOverlayTitle {
+    font-size: 16px;
+  }
+
+  .materialsOverlayText {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .matGrid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .matPartCard {
+    border-radius: 16px;
+    padding: 10px;
+  }
+
+  .matPartTitle {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  .matOptions {
+    gap: 8px;
+  }
+
+  .matRadio {
+    width: 13px;
+    height: 13px;
+    min-width: 13px;
+    flex-basis: 13px;
+  }
+
+  .matOptLabel {
+    font-size: 13px;
+    line-height: 1.28;
+  }
+
+  .matActions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .matActions .fuelBtn {
+    width: 100%;
+  }
+}
+
+html,
+body {
+  overflow-x: hidden;
+}
+
+@media (max-width: 760px) {
+  html,
+  body {
+    height: auto;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .fuelPageRoot {
+    min-height: 100dvh;
+    height: auto;
+    overflow-x: hidden;
+    overflow-y: visible;
+  }
+
+  .fuelLayout {
+    height: auto !important;
+    min-height: 100dvh;
+    overflow: visible !important;
+  }
+
+  .fuelLeft,
+  .fuelMainCard,
+  .fuelRight,
+  .fuelCharts {
+    overflow: visible;
+  }
+}
+
+@media (min-width: 761px) {
+  .chartSvg,
+  .chartPlaceholder {
+    min-height: 182px;
+  }
+}
+
+
+
+.theme-toggle {
+  flex: 0 0 auto;
+  border: 1px solid rgba(110, 231, 255, 0.28);
+  background: rgba(10, 25, 45, 0.35);
+  color: var(--text);
+  font-size: 14px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 18px rgba(110, 231, 255, 0.12);
+  transition: box-shadow 180ms ease, transform 180ms ease;
+}
+
+.theme-toggle:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 22px rgba(110, 231, 255, 0.22),
+    0 0 34px rgba(74, 163, 255, 0.14);
+}
+
+.theme-blue {
+  --bg1: #06121f;
+  --neon: #6ee7ff;
+  --neon2: #4aa3ff;
+  --text: #eaf6ff;
+  --muted: rgba(234, 246, 255, 0.75);
+}
+
+.theme-mono {
+  --bg1: #000000;
+  --neon: #ffffff;
+  --neon2: #dcdcdc;
+  --text: #ffffff;
+  --muted: rgba(255, 255, 255, 0.78);
+}
+
+.home-root {
+  position: relative;
+  min-height: 100vh;
+  background: radial-gradient(1200px 700px at 50% 30%, #0f3f74 0%, var(--bg1) 55%, #040b14 100%);
+}
+
+.home-root.theme-mono {
+  background: #000000;
+}
+
+/* ===== Homepage mono look ===== */
+
+.home-root.theme-mono .nav-pill {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(0, 0, 0, 0.48);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 12px 32px rgba(0, 0, 0, 0.55),
+    0 0 24px rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.home-root.theme-mono .nav-pill > * {
+  position: relative;
+  z-index: 1;
+}
+
+.home-root.theme-mono .nav-pill::before,
+.home-root.theme-mono .nav-pill::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.home-root.theme-mono .nav-pill::before {
+  inset: 0;
+  opacity: 0;
+  background-image: linear-gradient(
+    135deg,
+    transparent 46.8%,
+    rgba(255, 255, 255, 0.00) 48.0%,
+    rgba(255, 255, 255, 0.08) 49.0%,
+    rgba(255, 255, 255, 0.22) 49.5%,
+    rgba(255, 255, 255, 0.62) 50.0%,
+    rgba(255, 255, 255, 0.22) 50.5%,
+    rgba(255, 255, 255, 0.08) 51.0%,
+    rgba(255, 255, 255, 0.00) 52.0%,
+    transparent 53.2%
+  );
+  background-repeat: no-repeat;
+  background-size: 260% 260%;
+  background-position: -170% -170%;
+  filter: blur(1px);
+  will-change: background-position, opacity;
+  animation: navbarMonoSwipe 3.1s linear infinite;
+  z-index: 0;
+}
+
+.home-root.theme-mono .nav-pill::after {
+  display: none;
+}
+
+.home-root.theme-mono .nav-item {
+  color: rgba(255, 255, 255, 0.74);
+}
+
+.home-root.theme-mono .nav-item:hover,
+.home-root.theme-mono .nav-item.active {
+  color: #ffffff;
+  text-shadow:
+    0 0 12px rgba(255, 255, 255, 0.52),
+    0 0 24px rgba(255, 255, 255, 0.16);
+}
+
+.home-root.theme-mono .nav-item.active .nav-label::after,
+.home-root.theme-mono .nav-item:hover .nav-label::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 1), transparent);
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.46);
+}
+
+.home-root.theme-mono .nav-icon,
+.home-root.theme-mono .theme-toggle {
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.08);
+}
+
+.home-root.theme-mono .nav-icon:hover,
+.home-root.theme-mono .theme-toggle:hover {
+  box-shadow:
+    0 0 22px rgba(255, 255, 255, 0.16),
+    0 0 34px rgba(255, 255, 255, 0.08);
+}
+
+.home-root.theme-mono .profile-dot {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.55);
+}
+
+
+
+.nav-sparks {
+  display: none !important;
+}
+
+.nav-spark,
+.nav-spark-top,
+.nav-spark-bottom,
+.nav-spark-left,
+.nav-spark-right {
+  display: none !important;
+}
+
+@keyframes navSparkFade {
+  0% { opacity: 0; }
+  12% { opacity: 0; }
+  70% { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+
+
+body.theme-blue {
+  --theme-text: rgba(234, 246, 255, 0.92);
+  --theme-muted: rgba(234, 246, 255, 0.75);
+  --theme-border: rgba(110, 231, 255, 0.24);
+  --theme-border-strong: rgba(110, 231, 255, 0.36);
+  --theme-panel: rgba(4, 14, 26, 0.35);
+  --theme-panel-strong: rgba(10, 25, 45, 0.35);
+  --theme-glow-1: rgba(110, 231, 255, 0.18);
+  --theme-glow-2: rgba(74, 163, 255, 0.15);
+  --theme-shadow: rgba(110, 231, 255, 0.12);
+  --theme-underline: rgba(110, 231, 255, 0.95);
+  --theme-underline-shadow: rgba(110, 231, 255, 0.55);
+  --spark-core: rgba(110, 231, 255, 0.95);
+  --spark-soft: rgba(110, 231, 255, 0.18);
+  --spark-shadow-1: rgba(110, 231, 255, 0.75);
+  --spark-shadow-2: rgba(74, 163, 255, 0.45);
+  --spark-shadow-3: rgba(110, 231, 255, 0.22);
+}
+
+body.theme-mono {
+  --theme-text: rgba(255, 255, 255, 0.96);
+  --theme-muted: rgba(255, 255, 255, 0.78);
+  --theme-border: rgba(255, 255, 255, 0.18);
+  --theme-border-strong: rgba(255, 255, 255, 0.34);
+  --theme-panel: rgba(0, 0, 0, 0.60);
+  --theme-panel-strong: rgba(255, 255, 255, 0.05);
+  --theme-glow-1: rgba(255, 255, 255, 0.30);
+  --theme-glow-2: rgba(255, 255, 255, 0.14);
+  --theme-shadow: rgba(255, 255, 255, 0.10);
+  --theme-underline: rgba(255, 255, 255, 1);
+  --theme-underline-shadow: rgba(255, 255, 255, 0.42);
+  --spark-core: rgba(255, 255, 255, 1);
+  --spark-soft: rgba(255, 255, 255, 0.16);
+  --spark-shadow-1: rgba(255, 255, 255, 0.8);
+  --spark-shadow-2: rgba(255, 255, 255, 0.52);
+  --spark-shadow-3: rgba(255, 255, 255, 0.24);
+}
+
+body.theme-mono {
+  background:
+    radial-gradient(1400px 820px at 50% 26%, #1a1a1a 0%, #050505 35%, #000000 68%, #000000 100%) !important;
+}
+
+body.theme-mono .home-bg,
+body.theme-mono .customizeBg {
+  filter: grayscale(1);
+}
+
+/* effective homepage overrides */
+body.theme-mono .home-bg {
+  filter: none !important;
+  background:
+    radial-gradient(700px 380px at 50% 25%, rgba(255, 255, 255, 0.22), transparent 55%),
+    radial-gradient(600px 340px at 60% 35%, rgba(255, 255, 255, 0.18), transparent 60%) !important;
+}
+
+body.theme-mono .nav-pill,
+body.theme-mono .garage-titlePill,
+body.theme-mono .garage-searchWrap,
+body.theme-mono .garage-carCard,
+body.theme-mono .garage-saveCard,
+body.theme-mono .topTitlePill,
+body.theme-mono .engineChoicePill,
+body.theme-mono .stageCard,
+body.theme-mono .panelCard,
+body.theme-mono .fuelTop,
+body.theme-mono .fuelMainCard,
+body.theme-mono .fuelTitlePill,
+body.theme-mono .fuelCharts,
+body.theme-mono .chartCard,
+body.theme-mono .materialsOverlayCard {
+  border-color: var(--theme-border-strong) !important;
+  background: var(--theme-panel) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 12px 32px rgba(0, 0, 0, 0.55),
+    0 0 28px var(--theme-shadow) !important;
+}
+
+
+body.theme-mono .engineChoicePill::before,
+body.theme-mono .engineChoicePill::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.20), transparent) !important;
+}
+
+
+body.theme-mono .nav-pill::after {
+  display: none !important;
+}
+
+
+body.theme-mono .nav-pill {
+  position: relative !important;
+  border-color: rgba(255, 255, 255, 0.24) !important;
+  background: rgba(0, 0, 0, 0.48) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 12px 32px rgba(0, 0, 0, 0.55),
+    0 0 24px rgba(255, 255, 255, 0.08) !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
+}
+
+body.theme-mono .nav-pill > * {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+body.theme-mono .nav-pill::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  background-image: linear-gradient(
+    135deg,
+    transparent 46.8%,
+    rgba(255, 255, 255, 0.00) 48.0%,
+    rgba(255, 255, 255, 0.08) 49.0%,
+    rgba(255, 255, 255, 0.22) 49.5%,
+    rgba(255, 255, 255, 0.62) 50.0%,
+    rgba(255, 255, 255, 0.22) 50.5%,
+    rgba(255, 255, 255, 0.08) 51.0%,
+    rgba(255, 255, 255, 0.00) 52.0%,
+    transparent 53.2%
+  ) !important;
+  background-repeat: no-repeat !important;
+  background-size: 260% 260% !important;
+  background-position: -170% -170% !important;
+  filter: blur(1px) !important;
+  will-change: background-position, opacity !important;
+  animation: navbarMonoSwipe 3.1s linear infinite !important;
+  z-index: 0 !important;
+}
+
+body.theme-mono .nav-pill::after {
+  display: none !important;
+}
+
+body.theme-mono .nav-item,
+body.theme-mono .garage-searchInput,
+body.theme-mono .garage-previewLabel,
+body.theme-mono .garage-previewHint,
+body.theme-mono .topTitleText,
+body.theme-mono .engineChoiceBtn,
+body.theme-mono .fuelBtn,
+body.theme-mono .chartTickText,
+body.theme-mono .chartSelect,
+body.theme-mono .chartValuePill,
+body.theme-mono .matOptLabel,
+body.theme-mono .materialsOverlayText,
+body.theme-mono .materialsOverlayTitle,
+body.theme-mono .fuelHelpBubble,
+body.theme-mono .fuelTitlePill span,
+body.theme-mono .chartAxisLabel,
+body.theme-mono .chartAxisStrong,
+body.theme-mono .chartGridLine,
+body.theme-mono .chartPlaceholderLine,
+body.theme-mono .chartPlaceholderWave {
+  color: var(--theme-text) !important;
+  stroke: rgba(255, 255, 255, 0.28);
+}
+
+body.theme-mono .nav-item.active,
+body.theme-mono .nav-item:hover,
+body.theme-mono .engineChoiceBtn.active,
+body.theme-mono .engineChoiceBtn:hover,
+body.theme-mono .fuelBtn.active,
+body.theme-mono .fuelBtn:hover,
+body.theme-mono .wideAction,
+body.theme-mono .selectItem.active,
+body.theme-mono .selectItem:hover {
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.42) !important;
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.18) inset,
+    0 0 24px rgba(255, 255, 255, 0.12) !important;
+}
+
+body.theme-mono .nav-item.active .nav-label::after,
+body.theme-mono .nav-item:hover .nav-label::after {
+  background: linear-gradient(90deg, transparent, var(--theme-underline), transparent) !important;
+  box-shadow: 0 0 14px var(--theme-underline-shadow) !important;
+}
+
+body.theme-mono .nav-icon,
+body.theme-mono .theme-toggle,
+body.theme-mono .fuelIconBtn,
+body.theme-mono .chartSelect,
+body.theme-mono .chartValuePill,
+body.theme-mono .matPartCard,
+body.theme-mono .matRadio,
+body.theme-mono .garage-pencil,
+body.theme-mono .backBtn,
+body.theme-mono .app-backBtn {
+  border-color: rgba(255, 255, 255, 0.26) !important;
+  background: var(--theme-panel-strong) !important;
+  color: var(--theme-text) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    0 0 18px rgba(255, 255, 255, 0.08) !important;
+}
+
+body.theme-mono .profile-dot,
+body.theme-mono .app-backIcon,
+body.theme-mono .backIcon,
+body.theme-mono .garage-searchIcon,
+body.theme-mono .garage-searchIcon::after,
+body.theme-mono .app-backIcon::before {
+  background: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.4) !important;
+  border-color: rgba(255, 255, 255, 0.95) !important;
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+body.theme-mono .chartSvg {
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+    rgba(0, 0, 0, 0.28) !important;
+}
+
+body.theme-mono .chartPath {
+  stroke: rgba(255, 255, 255, 0.95) !important;
+}
+
+body.theme-mono .chartGlowDot {
+  fill: rgba(255, 255, 255, 0.95) !important;
+}
+
+@keyframes navbarMonoSwipe {
+  0% {
+    background-position: -170% -170%;
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.95;
+  }
+  45% {
+    opacity: 1;
+  }
+  82% {
+    opacity: 0.9;
+  }
+  100% {
+    background-position: 170% 170%;
+    opacity: 0;
+  }
+}
+
+
+
+.backBtn,
+.dpadLR,
+.wideAction,
+.optionBtn,
+.selectItem,
+.menuHeader {
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.dpadLR:hover,
+.wideAction:hover,
+.optionBtn:hover,
+.selectItem:hover,
+.menuHeader:hover {
+  transform: translateY(-1px);
+}
+
+body.theme-blue .dpadLR:hover,
+body.theme-blue .wideAction:hover,
+body.theme-blue .optionBtn:hover,
+body.theme-blue .selectItem:hover {
+  border-color: rgba(140, 235, 255, 0.55) !important;
+  box-shadow:
+    0 0 0 2px rgba(0,0,0,0.18) inset,
+    0 0 22px rgba(64, 220, 255, 0.16) !important;
+}
+
+body.theme-blue .backBtn:hover,
+body.theme-blue .backBtn:focus {
+  border-color: rgba(140, 235, 255, 0.55) !important;
+  background: rgba(12, 28, 52, 0.72) !important;
+  box-shadow:
+    0 0 0 2px rgba(0,0,0,0.18) inset,
+    0 0 22px rgba(64, 220, 255, 0.16),
+    0 14px 40px rgba(0, 0, 0, 0.45) !important;
+  transform: translateY(-50%) translateY(-1px);
+}
+
+body.theme-blue .backBtn:active {
+  transform: translateY(-50%) scale(0.96);
+}
+
+body.theme-blue .backBtn:hover::before,
+body.theme-blue .backBtn:focus::before {
+  color: rgba(235, 250, 255, 0.98) !important;
+  text-shadow:
+    0 0 10px rgba(110, 231, 255, 0.55),
+    0 0 22px rgba(74, 163, 255, 0.25) !important;
+}
+
+body.theme-blue .wideAction:hover {
+  background: rgba(12, 28, 52, 0.72) !important;
+  color: rgba(255, 255, 255, 0.98) !important;
+}
+
+body.theme-blue .menuHeader:hover {
+  background: rgba(255,255,255,0.05) !important;
+}
+
+body.theme-mono .backBtn {
+  border: 1px solid rgba(255, 255, 255, 0.34) !important;
+  background: transparent !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.05) inset,
+    0 0 16px rgba(255,255,255,0.06) !important;
+  transform: none !important;
+}
+
+body.theme-mono .backBtn:hover,
+body.theme-mono .backBtn:focus,
+body.theme-mono .backBtn:active {
+  border-color: rgba(255, 255, 255, 0.46) !important;
+  background: transparent !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.07) inset,
+    0 0 18px rgba(255,255,255,0.09) !important;
+  transform: none !important;
+  translate: none !important;
+  top: auto !important;
+  margin-top: 0 !important;
+}
+
+body.theme-mono .backIcon {
+  display: none !important;
+}
+
+body.theme-mono .backBtn::before {
+  color: rgba(255, 255, 255, 0.96) !important;
+  text-shadow: none !important;
+}
+
+body.theme-mono .backIcon:hover,
+body.theme-mono .backIcon:active,
+body.theme-mono .backBtn *,
+body.theme-mono .backBtn:hover * {
+  transform: none !important;
+  translate: none !important;
+}
+
+body.theme-mono .dpadLR {
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  background: rgba(0, 0, 0, 0.56) !important;
+  color: rgba(255,255,255,0.95) !important;
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,0.03) inset,
+    0 18px 55px rgba(0,0,0,0.35),
+    0 0 10px rgba(255,255,255,0.04) !important;
+}
+
+body.theme-mono .dpadLR:hover {
+  border-color: rgba(255,255,255,0.40) !important;
+  background: rgba(0, 0, 0, 0.64) !important;
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,0.05) inset,
+    0 0 18px rgba(255,255,255,0.10),
+    0 0 28px rgba(255,255,255,0.05) !important;
+}
+
+body.theme-mono .wideAction {
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  background: rgba(0, 0, 0, 0.58) !important;
+  color: rgba(255,255,255,0.95) !important;
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,0.03) inset,
+    0 18px 70px rgba(0,0,0,0.45),
+    0 0 12px rgba(255,255,255,0.04) !important;
+}
+
+body.theme-mono .wideAction:hover {
+  border-color: rgba(255,255,255,0.42) !important;
+  background: rgba(0, 0, 0, 0.66) !important;
+  color: rgba(255,255,255,1) !important;
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,0.06) inset,
+    0 0 18px rgba(255,255,255,0.12),
+    0 0 30px rgba(255,255,255,0.06) !important;
+}
+
+body.theme-mono .menuHeader {
+  background: rgba(255,255,255,0.02) !important;
+  color: rgba(255,255,255,0.94) !important;
+}
+
+body.theme-mono .menuHeader:hover {
+  background: rgba(255,255,255,0.04) !important;
+}
+
+body.theme-mono .optionBtn,
+body.theme-mono .selectItem {
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  background: rgba(0, 0, 0, 0.52) !important;
+  color: rgba(255,255,255,0.94) !important;
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,0.03) inset,
+    0 0 10px rgba(255,255,255,0.03) !important;
+}
+
+body.theme-mono .optionBtn:hover,
+body.theme-mono .selectItem:hover {
+  border-color: rgba(255,255,255,0.34) !important;
+  background: rgba(0, 0, 0, 0.60) !important;
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,0.05) inset,
+    0 0 16px rgba(255,255,255,0.08) !important;
+}
+
+body.theme-mono .optionBtn.active,
+body.theme-mono .selectItem.active {
+  border-color: rgba(255,255,255,0.52) !important;
+  background: rgba(10, 10, 10, 0.72) !important;
+  color: rgba(255,255,255,1) !important;
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,0.08) inset,
+    0 0 18px rgba(255,255,255,0.12),
+    0 0 30px rgba(255,255,255,0.05) !important;
+}
+
+body.theme-mono .topTitleText,
+body.theme-mono .menuTitle,
+body.theme-mono .chev,
+body.theme-mono .selectPanelTitle,
+body.theme-mono .selectHint,
+body.theme-mono .selectItemFile {
+  color: rgba(255,255,255,0.92) !important;
+}
+
+
+
+body.theme-mono .carViewer3d {
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.05) inset,
+    0 18px 50px rgba(0,0,0,0.52),
+    0 0 18px rgba(255,255,255,0.05) !important;
+}
+
+body.theme-mono .viewerFrame,
+body.theme-mono .stageInner,
+body.theme-mono .canvasFrame {
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.05) inset !important;
+}
+
+body.theme-mono .menuItem {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14) !important;
+}
+
+body.theme-mono .panelCard {
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+}
+
+body.theme-mono .accordionItem,
+body.theme-mono .optionGroup,
+body.theme-mono .sectionRow {
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+
+
+.topTitlePill,
+.engineChoicePill {
+  position: relative;
+  overflow: hidden;
+}
+
+.topTitlePill > :not(.border-sparks),
+.engineChoicePill > :not(.border-sparks) {
+  position: relative;
+  z-index: 1;
+}
+
+.border-sparks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+  z-index: 0;
+}
+
+.border-spark {
+  position: absolute;
+  display: block;
+  border-radius: 999px;
+  opacity: 0;
+  animation: navSparkFade var(--duration) ease-out forwards;
+  box-shadow:
+    0 0 8px var(--spark-shadow-1, rgba(255, 255, 255, 0.75)),
+    0 0 18px var(--spark-shadow-2, rgba(255, 255, 255, 0.45)),
+    0 0 30px var(--spark-shadow-3, rgba(255, 255, 255, 0.22));
+}
+
+.border-spark-top,
+.border-spark-bottom {
+  width: var(--size);
+  height: 2px;
+  left: var(--offset);
+  transform: translateX(-50%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--spark-soft, rgba(255, 255, 255, 0.18)) 10%,
+    var(--spark-core, rgba(255, 255, 255, 1)) 50%,
+    var(--spark-soft, rgba(255, 255, 255, 0.18)) 90%,
+    transparent 100%
+  );
+}
+
+.border-spark-top { top: 0; }
+.border-spark-bottom { bottom: 0; }
+
+.border-spark-left,
+.border-spark-right {
+  width: 2px;
+  height: var(--size);
+  top: var(--offset);
+  transform: translateY(-50%);
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    var(--spark-soft, rgba(255, 255, 255, 0.18)) 10%,
+    var(--spark-core, rgba(255, 255, 255, 1)) 50%,
+    var(--spark-soft, rgba(255, 255, 255, 0.18)) 90%,
+    transparent 100%
+  );
+}
+
+.border-spark-left { left: 0; }
+.border-spark-right { right: 0; }
+
+.engineChoiceBtn {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.backBtn {
+  z-index: 12;
+  flex-shrink: 0;
+}
+
+body.theme-mono .backBtn {
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  translate: 0 0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.34) !important;
+  background: transparent !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.05) inset,
+    0 0 16px rgba(255,255,255,0.06) !important;
+}
+
+body.theme-mono .backBtn:hover,
+body.theme-mono .backBtn:focus {
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  translate: 0 0 !important;
+  margin-top: 0 !important;
+  border-color: rgba(255, 255, 255, 0.46) !important;
+  background: transparent !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.07) inset,
+    0 0 18px rgba(255,255,255,0.09) !important;
+}
+
+body.theme-mono .backBtn:active {
+  top: 50% !important;
+  transform: translateY(-50%) scale(0.96) !important;
+  translate: 0 0 !important;
+  margin-top: 0 !important;
+}
+
+body.theme-mono .backBtn,
+body.theme-mono .backBtn:hover,
+body.theme-mono .backBtn:focus,
+body.theme-mono .backBtn:active {
+  background-image: none !important;
+  background-color: transparent !important;
+}
+
+body.theme-mono .backBtn *,
+body.theme-mono .backBtn:hover *,
+body.theme-mono .backBtn:focus *,
+body.theme-mono .backBtn:active * {
+  transform: none !important;
+  translate: none !important;
+}
+
+body.theme-mono .backIcon {
+  color: rgba(255, 255, 255, 0.96) !important;
+  text-shadow: none !important;
+  background: transparent !important;
+}
+
+body.theme-mono .backIcon:hover,
+body.theme-mono .backIcon:active {
+  transform: none !important;
+  translate: none !important;
+}
+
+@media (min-width: 981px) and (min-height: 761px) {
+  .fuelPageRoot {
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  .fuelLayout {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    min-height: 100%;
+    grid-template-columns: minmax(0, 1fr) clamp(320px, 25vw, 430px);
+    gap: clamp(10px, 0.9vw, 16px);
+  }
+
+  .fuelLeft,
+  .fuelRight,
+  .fuelMainCard,
+  .fuelStage,
+  .fuelCharts,
+  .chartCard,
+  .chartBody {
+    min-height: 0;
+  }
+
+  .fuelLeft,
+  .fuelRight,
+  .fuelMainCard,
+  .fuelCharts {
+    height: 100%;
+  }
+
+  .fuelStage {
+    min-height: 0;
+  }
+
+  .fuelStage canvas {
+    position: absolute !important;
+    inset: 0;
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+  }
+}
+
+
+
+body.theme-mono .border-sparks,
+body.theme-mono .nav-sparks {
+  display: none !important;
+}
+
+body.theme-mono .nav-pill::before,
+body.theme-mono .nav-pill::after,
+body.theme-mono .engineChoicePill::before,
+body.theme-mono .engineChoicePill::after,
+body.theme-mono .fuelTitlePill::before,
+body.theme-mono .fuelTitlePill::after {
+  display: none !important;
+}
+
+@keyframes monoBorderSweepBg {
+  0% {
+    background-position: 0 0, -170% -170%;
+  }
+  100% {
+    background-position: 0 0, 170% 170%;
+  }
+}
+
+body.theme-mono .nav-pill,
+body.theme-mono .nav-icon,
+body.theme-mono .theme-toggle,
+body.theme-mono .app-backBtn,
+body.theme-mono .garage-titlePill,
+body.theme-mono .garage-searchWrap,
+body.theme-mono .garage-carCard,
+body.theme-mono .garage-saveCard,
+body.theme-mono .garage-pencil,
+body.theme-mono .garage-nameInput,
+body.theme-mono .backBtn,
+body.theme-mono .topTitlePill,
+body.theme-mono .engineChoicePill,
+body.theme-mono .engineChoiceBtn,
+body.theme-mono .stageCard,
+body.theme-mono .panelCard,
+body.theme-mono .carViewer3d,
+body.theme-mono .dpadLR,
+body.theme-mono .wideAction,
+body.theme-mono .selectPanel,
+body.theme-mono .selectItem,
+body.theme-mono .optionBtn,
+body.theme-mono .fuelIconBtn,
+body.theme-mono .fuelTitlePill,
+body.theme-mono .fuelMainCard,
+body.theme-mono .fuelRight,
+body.theme-mono .chartCard,
+body.theme-mono .chartSelect,
+body.theme-mono .chartValuePill,
+body.theme-mono .fuelBtn,
+body.theme-mono .materialsOverlayCard,
+body.theme-mono .matPartCard,
+body.theme-mono .matRadio {
+  border-color: transparent !important;
+  background:
+    linear-gradient(var(--mono-fill, rgba(0, 0, 0, 0.66)), var(--mono-fill, rgba(0, 0, 0, 0.66))) padding-box,
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.26) 0%,
+      rgba(255, 255, 255, 0.26) 46.8%,
+      rgba(255, 255, 255, 0.72) 49.2%,
+      rgba(255, 255, 255, 1) 50%,
+      rgba(255, 255, 255, 0.72) 50.8%,
+      rgba(255, 255, 255, 0.26) 53.2%,
+      rgba(255, 255, 255, 0.26) 100%
+    ) border-box !important;
+  background-repeat: no-repeat !important;
+  background-size: auto, 250% 250% !important;
+  background-position: 0 0, -170% -170% !important;
+  animation: monoBorderSweepBg var(--mono-sweep-duration, 4.2s) linear infinite !important;
+}
+
+body.theme-mono .nav-pill {
+  --mono-fill: rgba(0, 0, 0, 0.48);
+}
+
+body.theme-mono .nav-icon,
+body.theme-mono .theme-toggle,
+body.theme-mono .app-backBtn,
+body.theme-mono .backBtn,
+body.theme-mono .engineChoiceBtn,
+body.theme-mono .dpadLR,
+body.theme-mono .wideAction,
+body.theme-mono .optionBtn,
+body.theme-mono .selectItem,
+body.theme-mono .garage-pencil,
+body.theme-mono .garage-nameInput,
+body.theme-mono .fuelIconBtn,
+body.theme-mono .fuelBtn,
+body.theme-mono .chartSelect,
+body.theme-mono .chartValuePill {
+  --mono-fill: rgba(0, 0, 0, 0.92);
+}
+
+body.theme-mono .garage-titlePill,
+body.theme-mono .garage-searchWrap,
+body.theme-mono .garage-carCard,
+body.theme-mono .garage-saveCard,
+body.theme-mono .topTitlePill,
+body.theme-mono .engineChoicePill,
+body.theme-mono .stageCard,
+body.theme-mono .panelCard,
+body.theme-mono .carViewer3d,
+body.theme-mono .fuelTitlePill,
+body.theme-mono .fuelMainCard,
+body.theme-mono .fuelRight,
+body.theme-mono .chartCard,
+body.theme-mono .materialsOverlayCard,
+body.theme-mono .matPartCard {
+  --mono-fill: rgba(0, 0, 0, 0.66);
+}
+
+body.theme-mono .fuelPageRoot .fuelIconBtn,
+body.theme-mono .fuelPageRoot .fuelBtn,
+body.theme-mono .fuelPageRoot .chartSelect,
+body.theme-mono .fuelPageRoot .chartValuePill {
+  color: rgba(255, 255, 255, 0.96) !important;
+}
+
+body.theme-mono .fuelPageRoot .chartSelect option {
+  background: #000000;
+  color: #ffffff;
+}
+
+.fuelRight {
+  min-height: 0;
+  display: flex;
+}
+
+.fuelCharts {
+  width: 100%;
+  min-height: 0;
+  padding: 10px;
+  gap: 10px;
+}
+
+.chartCard {
+  min-height: 0;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.chartTop {
+  padding: 8px 8px 0;
+  border-bottom: 0;
+  background: transparent;
+}
+
+.chartBody {
+  min-height: 0;
+  display: flex;
+  padding: 8px 8px 10px;
+  overflow: hidden;
+}
+
+.chartSvg,
+.chartPlaceholder {
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+  min-height: 0 !important;
+}
+
+.chartPlaceholder {
+  background:
+    linear-gradient(rgba(110, 231, 255, 0.05), rgba(110, 231, 255, 0.02)),
+    rgba(0, 0, 0, 0.22);
+}
+
+.chartPlaceholderLine {
+  left: 8%;
+  right: 8%;
+}
+
+.chartPlaceholderLine:nth-child(1) {
+  top: 36%;
+}
+
+.chartPlaceholderLine:nth-child(2) {
+  top: 68%;
+}
+
+.chartPlaceholderLine:nth-child(3),
+.chartPlaceholderWave {
+  display: none;
+}
+
+.chartGridLine {
+  stroke: rgba(255, 255, 255, 0.12);
+  stroke-width: 1;
+}
+
+body.theme-mono .chartGridLine {
+  stroke: rgba(255, 255, 255, 0.14) !important;
+}
+
+.fuelStage canvas {
+  touch-action: none;
+}
+
+@media (max-width: 1260px), (max-height: 760px) {
+  .fuelCharts {
+    grid-auto-rows: minmax(250px, auto);
+  }
+
+  .chartCard {
+    min-height: 250px;
+  }
+}
+
+@media (max-width: 560px) {
+  .fuelCharts {
+    grid-auto-rows: minmax(210px, auto);
+  }
+
+  .chartBody {
+    padding: 6px;
+  }
+}
+
+
+
+.chartAxisLabel {
+  fill: rgba(234, 246, 255, 0.82);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+}
+
+.chartTickText {
+  fill: rgba(234, 246, 255, 0.84);
+  font-size: 9.5px;
+  font-weight: 500;
+}
+
+.chartAxisStrong {
+  stroke: rgba(234, 246, 255, 0.26);
+  stroke-width: 1.15;
+}
+
+.chartSvg {
+  overflow: visible;
+}
+
+body.theme-mono .chartTickText,
+body.theme-mono .chartAxisLabel {
+  fill: rgba(255, 255, 255, 0.9) !important;
+}
+
+body.theme-mono .chartAxisStrong {
+  stroke: rgba(255, 255, 255, 0.3) !important;
+}
+
+body.theme-mono .fuelStage::before {
+  top: 60% !important;
+  background: radial-gradient(
+    circle at 50% 52%,
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.06) 40%,
+    rgba(0, 0, 0, 0) 72%
+  ) !important;
+  width: min(700px, 68%) !important;
+  height: min(420px, 58%) !important;
+  filter: blur(10px) !important;
+  opacity: 0.66 !important;
+}
+
+body.theme-mono .fuelStage,
+body.theme-mono .fuelStage canvas,
+body.theme-mono .carViewer3d,
+body.theme-mono .carViewer3d canvas {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+body.theme-mono .fuelStage,
+body.theme-mono .carViewer3d {
+  contain: layout paint;
+}
+
+body.theme-mono .fuelPageRoot {
+  background: #000000 !important;
+}
+
+body.theme-mono .fuelMainCard {
+  background: rgba(0, 0, 0, 0.96) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.14) inset,
+    0 16px 40px rgba(0, 0, 0, 0.72) !important;
+}
+
+body.theme-mono .fuelStage {
+  background: #000000 !important;
+}
+
+body.theme-mono .nav-pill,
+body.theme-mono .garage-titlePill,
+body.theme-mono .garage-searchWrap,
+body.theme-mono .garage-carCard,
+body.theme-mono .garage-saveCard,
+body.theme-mono .topTitlePill,
+body.theme-mono .engineChoicePill,
+body.theme-mono .stageCard,
+body.theme-mono .panelCard,
+body.theme-mono .fuelTop,
+body.theme-mono .fuelMainCard,
+body.theme-mono .fuelTitlePill,
+body.theme-mono .fuelRight,
+body.theme-mono .chartCard,
+body.theme-mono .materialsOverlayCard,
+body.theme-mono .matPartCard {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.16) inset,
+    0 14px 38px rgba(0, 0, 0, 0.58),
+    0 0 18px rgba(255, 255, 255, 0.05) !important;
+}
+
+body.theme-mono .nav-icon,
+body.theme-mono .theme-toggle,
+body.theme-mono .app-backBtn,
+body.theme-mono .backBtn,
+body.theme-mono .engineChoiceBtn,
+body.theme-mono .dpadLR,
+body.theme-mono .wideAction,
+body.theme-mono .optionBtn,
+body.theme-mono .selectItem,
+body.theme-mono .garage-pencil,
+body.theme-mono .garage-nameInput,
+body.theme-mono .fuelIconBtn,
+body.theme-mono .fuelBtn,
+body.theme-mono .chartSelect,
+body.theme-mono .chartValuePill {
+  --mono-fill: rgba(0, 0, 0, 0.96);
+  color: rgba(255, 255, 255, 0.98) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.18) inset,
+    0 10px 24px rgba(0, 0, 0, 0.42),
+    0 0 14px rgba(255, 255, 255, 0.05) !important;
+}
+
+body.theme-mono .engineChoiceBtn:hover,
+body.theme-mono .wideAction:hover,
+body.theme-mono .optionBtn:hover,
+body.theme-mono .selectItem:hover,
+body.theme-mono .fuelBtn:hover,
+body.theme-mono .fuelBtn.active,
+body.theme-mono .fuelIconBtn:hover,
+body.theme-mono .theme-toggle:hover,
+body.theme-mono .nav-icon:hover,
+body.theme-mono .garage-pencil:hover {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.24) inset,
+    0 0 20px rgba(255, 255, 255, 0.1),
+    0 12px 28px rgba(0, 0, 0, 0.48) !important;
+}
+
+body.theme-mono .nav-item,
+body.theme-mono .menuHeader {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid transparent !important;
+  border-radius: 14px;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.94), rgba(0, 0, 0, 0.94)) padding-box,
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.38) 0%,
+      rgba(255, 255, 255, 0.38) 46.8%,
+      rgba(255, 255, 255, 0.82) 49.2%,
+      rgba(255, 255, 255, 1) 50%,
+      rgba(255, 255, 255, 0.82) 50.8%,
+      rgba(255, 255, 255, 0.38) 53.2%,
+      rgba(255, 255, 255, 0.38) 100%
+    ) border-box !important;
+  background-repeat: no-repeat !important;
+  background-size: auto, 250% 250% !important;
+  background-position: 0 0, -170% -170% !important;
+  animation: monoBorderSweepBg var(--mono-sweep-duration, 4.2s) linear infinite !important;
+  color: rgba(255, 255, 255, 0.98) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.16) inset,
+    0 10px 22px rgba(0, 0, 0, 0.38),
+    0 0 10px rgba(255, 255, 255, 0.05) !important;
+}
+
+body.theme-mono .nav-item:hover,
+body.theme-mono .nav-item.active,
+body.theme-mono .menuHeader:hover {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.24) inset,
+    0 0 18px rgba(255, 255, 255, 0.1),
+    0 12px 26px rgba(0, 0, 0, 0.44) !important;
+}
+
+body.theme-mono .nav-item.active .nav-label::after,
+body.theme-mono .nav-item:hover .nav-label::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.96), transparent) !important;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.42) !important;
+}
+
+
+body.theme-mono .nav-item,
+body.theme-mono .nav-item:hover,
+body.theme-mono .nav-item.active {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  animation: none !important;
+}
+
+/* Homepage-only white mode background:
+   black base + one white blur above the spinning model. */
+body.theme-mono .homePageRoot {
+  background: #000000 !important;
+}
+
+body.theme-mono .homePageRoot > .home-bg {
+  filter: none !important;
+  background:
+    radial-gradient(900px 480px at 50% 30%, rgba(255, 255, 255, 0.28), transparent 58%),
+    radial-gradient(760px 420px at 50% 36%, rgba(255, 255, 255, 0.16), transparent 62%) !important;
+}
+
+/* Fuel/Electric: remove the larger extra blur layer; keep only stage glow. */
+.fuelPageRoot > .home-bg {
+  display: none !important;
+}
+
+/* Fuel/Electric white mode cleanup:
+   no outer header frame, and a black materials backdrop. */
+body.theme-mono .fuelTop {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body.theme-mono .materialsOverlay {
+  background: rgba(0, 0, 0, 0.97) !important;
+}
+
+body.theme-mono .matRadio {
+  border-color: rgba(255, 255, 255, 0.45) !important;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.10) !important;
+}
+
+body.theme-mono .matRadio.on::after {
+  background: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.65) !important;
+}
+
+body.theme-mono .fuelButtonsGrid {
+  border-top: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+
+body.theme-mono .fuelHelpBubble {
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  background: rgba(0, 0, 0, 0.62) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.12) inset,
+    0 16px 44px rgba(0, 0, 0, 0.55),
+    0 0 22px rgba(255, 255, 255, 0.14) !important;
+}
+
+@media (max-width: 720px) {
+  .chartTickText {
+    font-size: 8.5px;
+  }
+
+  .chartAxisLabel {
+    font-size: 8px;
+  }
+}
+
+
+.home-side-menu {
+  position: absolute;
+  top: 18px;
+  right: max(18px, calc((100vw - min(980px, 94vw)) / 2 - 270px));
+  width: 250px;
+  display: grid;
+  grid-template-rows: 1.3fr repeat(4, 1fr);
+  border-radius: 14px;
+  border: 1px solid rgba(110, 231, 255, 0.35);
+  background: rgba(4, 14, 26, 0.58);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  z-index: 12;
+  box-shadow:
+    0 0 0 1px rgba(74, 163, 255, 0.12) inset,
+    0 10px 30px rgba(0, 0, 0, 0.35),
+    0 0 22px rgba(110, 231, 255, 0.12);
+}
+
+.home-side-menu-row {
+  min-height: 44px;
+  border: 0;
+  border-top: 1px solid rgba(110, 231, 255, 0.18);
+  background: transparent;
+  color: rgba(234, 246, 255, 0.9);
+  font-size: 14px;
+  letter-spacing: 0.2px;
+  text-align: left;
+  padding: 0 14px;
+}
+
+.home-side-menu-input-row {
+  display: flex;
+  align-items: center;
+}
+
+.home-side-menu-input {
+  width: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: rgba(234, 246, 255, 0.9);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.home-side-menu-input::placeholder {
+  color: rgba(234, 246, 255, 0.7);
+}
+
+.home-side-menu-row-main {
+  min-height: 52px;
+  border-top: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(234, 246, 255, 0.97);
+  text-shadow: 0 0 12px rgba(110, 231, 255, 0.25);
+  display: flex;
+  align-items: center;
+}
+
+button.home-side-menu-row {
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+button.home-side-menu-row:hover {
+  background: rgba(110, 231, 255, 0.08);
+  color: rgba(234, 246, 255, 1);
+}
+
+body.theme-mono .home-side-menu {
+  border-color: transparent !important;
+  background: rgba(0, 0, 0, 0.92) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.12) inset,
+    0 12px 28px rgba(0, 0, 0, 0.6),
+    0 0 0 rgba(0, 0, 0, 0) !important;
+}
+
+body.theme-mono .home-side-menu-row {
+  border-top-color: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+body.theme-mono .home-side-menu-input {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+body.theme-mono .home-side-menu-input::placeholder {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+body.theme-mono .home-side-menu-row-main {
+  color: rgba(255, 255, 255, 0.98);
+  text-shadow: none;
+}
+
+body.theme-mono button.home-side-menu-row:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 1100px) {
+  .home-side-menu {
+    right: 18px;
+    top: 74px;
+  }
+}
+
+
+.registration-root {
+  min-height: 100vh;
+  background: #000000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.registration-card {
+  width: min(460px, 92vw);
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  background: rgba(0, 0, 0, 0.9);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.12) inset,
+    0 0 24px rgba(255, 255, 255, 0.18),
+    0 0 44px rgba(255, 255, 255, 0.08);
+  padding: 28px 24px 20px;
+}
+
+.registration-title {
+  margin: 0 0 18px;
+  font-size: 34px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.96);
+  letter-spacing: 0.2px;
+}
+
+.registration-form {
+  display: grid;
+  gap: 14px;
+}
+
+.registration-label {
+  display: grid;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.registration-input {
+  height: 48px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  background: rgba(0, 0, 0, 0.82);
+  color: rgba(255, 255, 255, 0.98);
+  padding: 0 14px;
+  font-size: 15px;
+  outline: none;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.05);
+}
+
+.registration-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.registration-input:focus {
+  border-color: rgba(255, 255, 255, 0.7);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.22) inset,
+    0 0 18px rgba(255, 255, 255, 0.14);
+}
+
+.registration-hint {
+  margin: 2px 0 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 13px;
+}
+
+.registration-message {
+  margin: 0;
+  color: rgba(255, 168, 168, 0.98);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.registration-button {
+  height: 48px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.56);
+  background: rgba(0, 0, 0, 0.92);
+  color: rgba(255, 255, 255, 0.98);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.15px;
+  cursor: pointer;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.11) inset,
+    0 0 14px rgba(255, 255, 255, 0.12);
+}
+
+.registration-button:hover {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.2) inset,
+    0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+.registration-switch {
+  margin-top: 14px;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.intro-card {
+  width: min(760px, 94vw);
+  min-height: 360px;
+  display: grid;
+  gap: 18px;
+  align-content: center;
+}
+
+.intro-text {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 17px;
+  line-height: 1.55;
+}

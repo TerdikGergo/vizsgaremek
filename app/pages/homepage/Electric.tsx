@@ -1,7 +1,7 @@
 "use client";
 
 import React, { Suspense, useMemo, useRef, useState, useEffect } from "react";
-import "../globals.css";
+import "../../globals.css";
 
 import { Canvas } from "@react-three/fiber";
 import { Center, Environment, Html, OrbitControls, useGLTF } from "@react-three/drei";
@@ -10,20 +10,16 @@ import { Center, Environment, Html, OrbitControls, useGLTF } from "@react-three/
 
 type Props = { onBack: () => void };
 
-type EngineKey = "V6" | "V8" | "V12" | "Inline" | "Boxer";
-type EngineFamily = "V" | "INLINE" | "BOXER";
+type EngineKey = "INLINE4";
+type EngineFamily = "INLINE";
 
 type PartKey =
   | "PISTON"
   | "ROD"
   | "CRANK"
   | "VALVES"
-  | "V_GIRDLE"
-  | "V_TIMING"
   | "L_DECK"
-  | "L_HEADSEAL"
-  | "B_OILING"
-  | "B_HEADSEAL";
+  | "L_HEADSEAL";
 
 type MaterialId =
   | "CAST_AL"
@@ -75,14 +71,6 @@ type EngineConst = {
   rpmPeakT: number;
 };
 
-type OilingPreset = {
-  id: "WET" | "BAFFLED" | "DRY";
-  label: string;
-  coolingGain: number;
-  wearGain: number;
-  frictionLossTorqueMul: number;
-};
-
 type DbJson = {
   globals: {
     mVehicle: number;
@@ -105,7 +93,24 @@ type DbJson = {
   materials: Record<MaterialId, MaterialProps>;
   geo: Record<PartKey, GeoProps>;
   engines: Record<EngineKey, EngineConst>;
-  oiling: OilingPreset[];
+  electric?: {
+    model?: string;
+    baseEngine?: EngineConst;
+  };
+};
+
+const ELECTRIC_MODEL_FALLBACK = "/models/inline-4_engine.glb";
+const ELECTRIC_BASE_ENGINE: EngineConst = {
+  family: "INLINE",
+  P_base_kW: 240,
+  T_base_Nm: 460,
+  RPM_redline: 16000,
+  betaHot: 1.15,
+  pBase_bar: 0,
+  rCyl: 0.047,
+  tWall: 0.0065,
+  rpmIdle: 900,
+  rpmPeakT: 2600,
 };
 
 type SeriesPoint = { t: number; y: number };
@@ -295,11 +300,7 @@ function useBodyThemeMode() {
 function EngineModel({ url, engineKey }: { url: string; engineKey: EngineKey }) {
   const gltf = useGLTF(url);
   const scaleByEngine: Record<EngineKey, number> = {
-    V6: 1.5,
-    V8: 1.5,
-    V12: 0.15,
-    Inline: 0.35,
-    Boxer: 0.15,
+    INLINE4: 0.005,
   };
   const scale = scaleByEngine[engineKey];
 
@@ -346,6 +347,29 @@ function Scene({ url, monoMode, engineKey }: { url: string; monoMode: boolean; e
   );
 }
 
+const ElectricViewer = React.memo(function ElectricViewer({
+  url,
+  themeMode,
+  engineKey,
+}: {
+  url: string;
+  themeMode: "blue" | "mono";
+  engineKey: EngineKey;
+}) {
+  return (
+    <Canvas
+      key={`inline4-${themeMode}`}
+      camera={{ position: [0, 0.4, 6.2], fov: 34 }}
+      dpr={themeMode === "mono" ? [0.9, 1.25] : [1, 2]}
+      gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
+      resize={{ scroll: false, debounce: { resize: 0, scroll: 50 } }}
+      onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
+    >
+      <Scene url={url} monoMode={themeMode === "mono"} engineKey={engineKey} />
+    </Canvas>
+  );
+});
+
 
 
 type PartUI = {
@@ -354,7 +378,7 @@ type PartUI = {
   options: { id: string; label: string; materialId?: MaterialId }[];
 };
 
-function getPartUI(family: EngineFamily): { fixed: PartUI[]; bottom: PartUI[] } {
+function getPartUI(): { fixed: PartUI[]; bottom: PartUI[] } {
   const fixed: PartUI[] = [
     {
       key: "PISTON",
@@ -394,72 +418,20 @@ function getPartUI(family: EngineFamily): { fixed: PartUI[]; bottom: PartUI[] } 
     },
   ];
 
-  if (family === "V") {
-    return {
-      fixed,
-      bottom: [
-        {
-          key: "V_GIRDLE",
-          label: "Main Bearing Girdle",
-          options: [
-            { id: "BASIC", label: "Cast Steel", materialId: "CAST_STEEL" },
-            { id: "MID", label: "Steel 4340", materialId: "STEEL_4340" },
-            { id: "RACE", label: "Billet 4340 Nitr.", materialId: "BILLET_4340_NITR" },
-          ],
-        },
-        {
-          key: "V_TIMING",
-          label: "Timing Drive",
-          options: [
-            { id: "BASIC", label: "Steel 4140", materialId: "STEEL_4140" },
-            { id: "MID", label: "Steel 4340", materialId: "STEEL_4340" },
-            { id: "RACE", label: "Billet 4340 Nitr.", materialId: "BILLET_4340_NITR" },
-          ],
-        },
-      ],
-    };
-  }
-
-  if (family === "INLINE") {
-    return {
-      fixed,
-      bottom: [
-        {
-          key: "L_DECK",
-          label: "Deck / Block Support",
-          options: [
-            { id: "BASIC", label: "Cast Steel (Open)", materialId: "CAST_STEEL" },
-            { id: "MID", label: "Steel 4340 (Closed)", materialId: "STEEL_4340" },
-            { id: "RACE", label: "Billet 4340 (Race)", materialId: "BILLET_4340_NITR" },
-          ],
-        },
-        {
-          key: "L_HEADSEAL",
-          label: "Head Seal System",
-          options: [
-            { id: "BASIC", label: "Composite", materialId: "GASKET_COMP" },
-            { id: "MID", label: "MLS", materialId: "MLS_SS" },
-            { id: "RACE", label: "MLS + O-ring", materialId: "ORING_SS" },
-          ],
-        },
-      ],
-    };
-  }
-
   return {
     fixed,
     bottom: [
       {
-        key: "B_OILING",
-        label: "Oiling System",
+        key: "L_DECK",
+        label: "Deck / Block Support",
         options: [
-          { id: "WET", label: "Wet sump" },
-          { id: "BAFFLED", label: "Baffled + pump" },
-          { id: "DRY", label: "Dry sump" },
+          { id: "BASIC", label: "Cast Steel (Open)", materialId: "CAST_STEEL" },
+          { id: "MID", label: "Steel 4340 (Closed)", materialId: "STEEL_4340" },
+          { id: "RACE", label: "Billet 4340 (Race)", materialId: "BILLET_4340_NITR" },
         ],
       },
       {
-        key: "B_HEADSEAL",
+        key: "L_HEADSEAL",
         label: "Head Seal System",
         options: [
           { id: "BASIC", label: "Composite", materialId: "GASKET_COMP" },
@@ -471,42 +443,36 @@ function getPartUI(family: EngineFamily): { fixed: PartUI[]; bottom: PartUI[] } 
   };
 }
 
-function defaultSelectionsFor(family: EngineFamily): Record<PartKey, string> {
+function defaultSelectionsFor(): Record<PartKey, string> {
   return {
     PISTON: "MID",
     ROD: "MID",
     CRANK: "MID",
     VALVES: "MID",
-    V_GIRDLE: "MID",
-    V_TIMING: "MID",
     L_DECK: "MID",
     L_HEADSEAL: "MID",
-    B_OILING: "BAFFLED",
-    B_HEADSEAL: "MID",
   };
 }
 
 
 
-function simulateSeries(db: DbJson, engine: EngineConst, engineKey: EngineKey, selections: Record<PartKey, string>) {
+function simulateSeries(
+  db: DbJson,
+  engine: EngineConst,
+  selections: Record<PartKey, string>,
+  motorCount: number
+) {
   const g = db.globals;
-  const family = engine.family;
-
-  const { fixed, bottom } = getPartUI(family);
+  const { fixed, bottom } = getPartUI();
   const allParts = [...fixed, ...bottom];
 
   const matByPart = new Map<PartKey, MaterialProps>();
-  let oiling: OilingPreset | null = null;
 
   for (const p of allParts) {
     const optId = selections[p.key];
     const opt = p.options.find((o) => o.id === optId);
     if (!opt) continue;
 
-    if (p.key === "B_OILING") {
-      oiling = db.oiling.find((x) => x.id === (opt.id as any)) ?? null;
-      continue;
-    }
     if (opt.materialId) matByPart.set(p.key, db.materials[opt.materialId]);
   }
 
@@ -520,24 +486,24 @@ function simulateSeries(db: DbJson, engine: EngineConst, engineKey: EngineKey, s
     inertia("PISTON") +
     inertia("ROD") +
     inertia("VALVES") +
-    (family === "V" ? inertia("V_GIRDLE") + inertia("V_TIMING") : 0) +
-    (family === "INLINE" ? inertia("L_DECK") : 0);
+    inertia("L_DECK");
 
   const Cth = (part: PartKey, fallbackCp: number) => mass(part) * (matByPart.get(part)?.cp ?? fallbackCp);
 
   const C_piston = Cth("PISTON", 900);
   const C_valves = Cth("VALVES", 500);
-  const hasSeal = family !== "V";
-  const sealKey: PartKey = family === "INLINE" ? "L_HEADSEAL" : "B_HEADSEAL";
+  const hasSeal = true;
+  const sealKey: PartKey = "L_HEADSEAL";
   const C_seal = hasSeal ? Cth(sealKey, 500) : 0;
 
   const TMAX_piston = matByPart.get("PISTON")?.tMaxC ?? 350;
   const TMAX_valves = matByPart.get("VALVES")?.tMaxC ?? 700;
   const TMAX_seal = hasSeal ? (matByPart.get(sealKey)?.tMaxC ?? 550) : 1e9;
 
-  const coolingGain = oiling?.coolingGain ?? 1.0;
-  const wearGain = oiling?.wearGain ?? 1.0;
-  const frictionMul = oiling?.frictionLossTorqueMul ?? 1.0;
+  const coolingGain = 1.0;
+  const wearGain = 1.0;
+  const frictionMul = 1.0;
+  const motorMultiplier = Math.max(1, motorCount);
 
   let omega = omegaFromRpm(engine.rpmIdle);
   let v = 0;
@@ -568,7 +534,7 @@ function simulateSeries(db: DbJson, engine: EngineConst, engineKey: EngineKey, s
 
     const thr = throttleAt(t);
     const curve = torqueCurve(engine, rpm);
-    const T_raw = engine.T_base_Nm * thr * curve;
+    const T_raw = engine.T_base_Nm * motorMultiplier * thr * curve;
 
     const margin_p = TMAX_piston - Tp;
     const margin_v = TMAX_valves - Tv;
@@ -657,7 +623,6 @@ function simulateSeries(db: DbJson, engine: EngineConst, engineKey: EngineKey, s
     out["RPM Utilization U_RPM(t)"].push({ t, y: U_rpm });
     out["Durability(t) [%]"].push({ t, y: durability });
 
-    void engineKey;
   }
 
   return out;
@@ -781,12 +746,12 @@ function SvgChart({ fn, series, animateKey }: { fn: FnKey; series: SeriesPoint[]
 
 
 
-export default function DieselGasoline({ onBack }: Props) {
+export default function Electric({ onBack }: Props) {
   const [db, setDb] = useState<DbJson | null>(null);
   const themeMode = useBodyThemeMode();
   const [dbErr, setDbErr] = useState<string | null>(null);
 
-  const [selectedEngine, setSelectedEngine] = useState<EngineKey>("V12");
+  const [motorCount, setMotorCount] = useState<1 | 2 | 3 | 4>(1);
   const [materialsOpen, setMaterialsOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
 
@@ -797,7 +762,7 @@ export default function DieselGasoline({ onBack }: Props) {
     FUNCTION_ITEMS[7],
   ]);
 
-  const [selections, setSelections] = useState<Record<PartKey, string>>(defaultSelectionsFor("V"));
+  const [selections, setSelections] = useState<Record<PartKey, string>>(defaultSelectionsFor());
   const [seriesMap, setSeriesMap] = useState<Record<FnKey, SeriesPoint[]> | null>(null);
   const [animateKey, setAnimateKey] = useState(0);
 
@@ -809,8 +774,9 @@ export default function DieselGasoline({ onBack }: Props) {
         const json = (await res.json()) as DbJson;
         setDb(json);
         setDbErr(null);
-      } catch (e: any) {
-        setDbErr(e?.message ?? "Failed to load engine data");
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : "Failed to load engine data";
+        setDbErr(msg);
         setDb(null);
       }
     })();
@@ -819,15 +785,9 @@ export default function DieselGasoline({ onBack }: Props) {
   const isLoading = !db && !dbErr;
   const hasError = !!dbErr;
 
-  const engineSafe = db?.engines?.[selectedEngine];
-  const familySafe: EngineFamily = engineSafe?.family ?? "V";
-  const modelUrlSafe = db?.engineModels?.[selectedEngine] ?? "/models/v12_engine.glb";
-
-  React.useEffect(() => {
-    setSelections(defaultSelectionsFor(familySafe));
-  }, [selectedEngine, familySafe]);
-
-  const { fixed, bottom } = useMemo(() => getPartUI(familySafe), [familySafe]);
+  const engineSafe = db?.electric?.baseEngine ?? db?.engines?.INLINE4 ?? ELECTRIC_BASE_ENGINE;
+  const modelUrlSafe = db?.electric?.model ?? db?.engineModels?.INLINE4 ?? ELECTRIC_MODEL_FALLBACK;
+  const { fixed, bottom } = useMemo(() => getPartUI(), []);
 
   const setChartFnAt = (idx: number, value: FnKey) => {
     setChartFn((prev) => {
@@ -839,14 +799,19 @@ export default function DieselGasoline({ onBack }: Props) {
 
   const onCalculate = () => {
     if (!db) return;
-    const engine = db.engines[selectedEngine];
-    const sim = simulateSeries(db, engine, selectedEngine, selections);
+    const sim = simulateSeries(db, engineSafe, selections, motorCount);
     setSeriesMap(sim);
     setAnimateKey((x) => x + 1);
   };
 
   const onSave = () => {
-    console.log("SAVE payload", { name: "Build name later", engine: selectedEngine, selections, charts: chartFn });
+    console.log("SAVE payload", {
+      name: "Electric build",
+      engine: "INLINE4",
+      motorCount,
+      selections,
+      charts: chartFn,
+    });
   };
 
   const fmtValue = (fn: FnKey, value: number) => {
@@ -880,7 +845,7 @@ const cardValue = (fn: FnKey) => {
             </button>
 
             <div className="fuelTitlePill">
-              <span>Diesel/Gasoline</span>
+              <span>Hybrid</span>
             </div>
 
             <button className="fuelIconBtn" type="button" onClick={() => setHelpOpen((p) => !p)} aria-label="Help">
@@ -899,21 +864,12 @@ const cardValue = (fn: FnKey) => {
                   Loading engine data...
                 </div>
               ) : (
-                <Canvas
-                  key={`${selectedEngine}-${themeMode}`}
-                  camera={{ position: [0, 0.4, 6.2], fov: 34 }}
-                  dpr={themeMode === "mono" ? [0.9, 1.25] : [1, 2]}
-                  gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
-                  resize={{ scroll: false, debounce: { resize: 0, scroll: 50 } }}
-                  onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
-                >
-                  <Scene url={modelUrlSafe} monoMode={themeMode === "mono"} engineKey={selectedEngine} />
-                </Canvas>
+                <ElectricViewer url={modelUrlSafe} themeMode={themeMode} engineKey="INLINE4" />
               )}
 
               {helpOpen && !hasError && !isLoading && !materialsOpen && (
                 <div className="fuelHelpBubble" role="note">
-                  Engine models are for illustration only; they may not look exactly the same in the car, only similar!
+                  Inline-4 model is fixed. Choose 1-4 electric engines to scale total output.
                 </div>
               )}
 
@@ -991,58 +947,51 @@ const cardValue = (fn: FnKey) => {
 
             <div className="fuelButtonsGrid">
               <button
-                className={`fuelBtn ${selectedEngine === "V12" ? "active" : ""}`}
-                onClick={() => {
-                  setMaterialsOpen(false);
-                  setSelectedEngine("V12");
-                }}
+                className="fuelBtn active"
+                onClick={() => setMaterialsOpen(false)}
                 type="button"
               >
-                V12
+                Inline 4
               </button>
 
               <button
-                className={`fuelBtn ${selectedEngine === "V6" ? "active" : ""}`}
+                className={`fuelBtn ${motorCount === 1 ? "active" : ""}`}
                 onClick={() => {
-                  setMaterialsOpen(false);
-                  setSelectedEngine("V6");
+                  setMotorCount(1);
                 }}
                 type="button"
               >
-                V6
+                1 Electric Engine
               </button>
 
               <button
-                className={`fuelBtn ${selectedEngine === "V8" ? "active" : ""}`}
+                className={`fuelBtn ${motorCount === 2 ? "active" : ""}`}
                 onClick={() => {
-                  setMaterialsOpen(false);
-                  setSelectedEngine("V8");
+                  setMotorCount(2);
                 }}
                 type="button"
               >
-                V8
+                2 Electric Engines
               </button>
 
               <button
-                className={`fuelBtn ${selectedEngine === "Inline" ? "active" : ""}`}
+                className={`fuelBtn ${motorCount === 3 ? "active" : ""}`}
                 onClick={() => {
-                  setMaterialsOpen(false);
-                  setSelectedEngine("Inline");
+                  setMotorCount(3);
                 }}
                 type="button"
               >
-                Inline Engine
+                3 Electric Engines
               </button>
 
               <button
-                className={`fuelBtn ${selectedEngine === "Boxer" ? "active" : ""}`}
+                className={`fuelBtn ${motorCount === 4 ? "active" : ""}`}
                 onClick={() => {
-                  setMaterialsOpen(false);
-                  setSelectedEngine("Boxer");
+                  setMotorCount(4);
                 }}
                 type="button"
               >
-                Boxer Engine
+                4 Electric Engines
               </button>
 
               <button
@@ -1096,8 +1045,4 @@ const cardValue = (fn: FnKey) => {
   );
 }
 
-useGLTF.preload("/models/v6_car_engine.glb");
-useGLTF.preload("/models/v8_engine.glb");
-useGLTF.preload("/models/v12_engine.glb");
-useGLTF.preload("/models/inline_6_engine.glb");
-useGLTF.preload("/models/f6_boxer_engine.glb");
+useGLTF.preload(ELECTRIC_MODEL_FALLBACK);

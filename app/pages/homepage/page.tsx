@@ -7,7 +7,7 @@ import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, Html, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
-import "../../globals.css";
+import "../globals.css";
 
 import Garage from "./Garage";
 import Customize from "./Customize";
@@ -19,7 +19,6 @@ type Page =
   | "Engine"
   | "DieselGasoline"
   | "Electric"
-  | "Subscription"
   | "About Us";
 
 type Theme = "blue" | "mono";
@@ -220,13 +219,17 @@ function Scene({ carUrl, theme }: { carUrl: string; theme: Theme }) {
   );
 }
 
-export default function HomePage() {
+export default function HomePage({ onLogout }: { onLogout?: () => void }) {
   const [active, setActive] = useState<Page>("Home");
   const [carUrl, setCarUrl] = useState<string>(DEFAULT_CAR_URL);
   const [theme, setTheme] = useState<Theme>("blue");
   const [sparks, setSparks] = useState<BorderSpark[]>([]);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [displayName, setDisplayName] = useState("displayname");
+  const isHomeActive = active === "Home";
+  const isCustomizeActive = active === "Customize";
+  const isGarageActive = active === "Garage";
+  const isAboutUsActive = active === "About Us";
   const profileButtonRef = useRef<HTMLButtonElement>(null);
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
@@ -363,25 +366,25 @@ useEffect(() => {
       <header className="top-nav">
         <nav className="nav-pill">
           <div className="nav-links">
-            <button className={`nav-item ${active === "Home" ? "active" : ""}`} onClick={() => setActive("Home")} type="button">
+            <button className={`nav-item ${isHomeActive ? "active" : ""}`} onClick={() => setActive("Home")} type="button">
               <span className="nav-label">Home</span>
             </button>
 
-            <button className={`nav-item ${active === "Customize" ? "active" : ""}`} onClick={() => setActive("Customize")} type="button">
+            <button className={`nav-item ${isCustomizeActive ? "active" : ""}`} onClick={() => setActive("Customize")} type="button">
               <span className="nav-label">Customize</span>
             </button>
 
-            <button className={`nav-item ${active === "Garage" ? "active" : ""}`} onClick={() => setActive("Garage")} type="button">
+            <button className={`nav-item ${isGarageActive ? "active" : ""}`} onClick={() => setActive("Garage")} type="button">
               <span className="nav-label">Garage</span>
             </button>
 
-            <button className={`nav-item ${active === "About Us" ? "active" : ""}`} onClick={() => setActive("About Us")} type="button">
+            <button className={`nav-item ${isAboutUsActive ? "active" : ""}`} onClick={() => setActive("About Us")} type="button">
               <span className="nav-label">About Us</span>
             </button>
           </div>
 
           <button className="theme-toggle" type="button" onClick={() => setTheme((prev) => (prev === "blue" ? "mono" : "blue"))}>
-            {theme === "blue" ? "White Mode" : "Blue Mode"}
+            {theme === "blue" ? "Dark Mode" : "Blue Mode"}
           </button>
 
           <button
@@ -432,6 +435,7 @@ useEffect(() => {
               role="menuitem"
               onClick={() => {
                 setIsProfileMenuOpen(false);
+                onLogout?.();
               }}
             >
               Log Out
@@ -471,5 +475,3 @@ useEffect(() => {
     </div>
   );
 }
-
-useGLTF.preload(DEFAULT_CAR_URL);

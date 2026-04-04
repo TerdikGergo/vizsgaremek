@@ -9,45 +9,74 @@ import { Environment, Html, useGLTF } from "@react-three/drei";
 
 type SectionKey = "color" | "lights" | "windows" | "spoiler" | "hood" | "exhaust";
 
-const COLOR_OPTIONS = ["Arctic Blue", "Midnight Black", "Pearl White", "Crimson Red", "Steel Grey"];
+const COLOR_OPTIONS = [
+  "Arctic Blue",
+  "Midnight Black",
+  "Pearl White",
+  "Crimson Red",
+  "Steel Grey",
+];
 const TWO_OPTIONS = ["Option A", "Option B"];
 
-/** legyen ugyanaz a kulcs mindenhol */
+
 const STORAGE_KEY = "selectedCarModelUrl";
 
-/**
- * ✅ 10 db külön GLB (public/models)
- * Fontos: public/models/... => URL: /models/...
- */
+
 const CAR_OPTIONS = [
   { id: "car_1", label: "Car Model 1", url: "/models/default_car.glb" },
-  { id: "car_2", label: "Car Model 2", url: "/models/Lambo_Red_SpoilerA.glb" },
-  { id: "car_3", label: "Car Model 3", url: "/models/car_03.glb" },
-  { id: "car_4", label: "Car Model 4", url: "/models/car_04.glb" },
-  { id: "car_5", label: "Car Model 5", url: "/models/car_05.glb" },
-  { id: "car_6", label: "Car Model 6", url: "/models/car_06.glb" },
-  { id: "car_7", label: "Car Model 7", url: "/models/car_07.glb" },
-  { id: "car_8", label: "Car Model 8", url: "/models/car_08.glb" },
+  { id: "car_2", label: "Car Model 2", url: "/models/Dodge_MidnightBlack_LB_WB_SC_HB.glb" },
+  { id: "car_3", label: "Car Model 3", url: "/models/LamboRedKisebb3.glb" },
+  { id: "car_4", label: "Car Model 4", url: "/models/Merci_PearlWhite_LB_WB_SC_HB.glb" },
+  { id: "car_5", label: "Car Model 5", url: "/models/Dodge_MidnightBlack_LB_WB_SC_HB.glb" },
+  { id: "car_6", label: "Car Model 6", url: "/models/Dodge_CrimsonRed_LB_WB_SB_HB.glb" },
+  { id: "car_7", label: "Car Model 7", url: "/models/proba.glb" },
+  { id: "car_8", label: "Car Model 8", url: "/models/Dodge_ArticBue_LB_WA_SC_HA.glb" },
   { id: "car_9", label: "Car Model 9", url: "/models/car_09.glb" },
   { id: "car_10", label: "Car Model 10", url: "/models/car_10.glb" },
 ] as const;
 
 const DEFAULT_CAR = CAR_OPTIONS[0];
 
-/**
- * ✅ EZ A LÉNYEGES FIX:
- * ugyanazt a fájlt más cache-kulccsal töltjük, így a Home oldal unmountja nem tudja “eldispose-olni”
- * a Customize cache-ét.
- */
+
 function customizeCacheUrl(url: string) {
-  // ha már van ?, akkor &-tel fűzzük
   return url.includes("?") ? `${url}&src=customize` : `${url}?src=customize`;
 }
 
-export default function Customize({ onBack }: { onBack: () => void }) {
-  const [open, setOpen] = useState<SectionKey | null>("color");
+function useBodyThemeMode() {
+  const [themeMode, setThemeMode] = useState<"blue" | "mono">("blue");
 
-  // ✅ 90° forgatás állapot (NINCS auto rotation)
+  useEffect(() => {
+    const readTheme = () => {
+      setThemeMode(document.body.classList.contains("theme-mono") ? "mono" : "blue");
+    };
+
+    readTheme();
+
+    const observer = new MutationObserver(readTheme);
+    observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+
+    window.addEventListener("pageshow", readTheme);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("pageshow", readTheme);
+    };
+  }, []);
+
+  return themeMode;
+}
+
+export default function Customize({
+  onBack,
+  onGoEngine,
+}: {
+  onBack: () => void;
+  onGoEngine: () => void;
+}) {
+  const [open, setOpen] = useState<SectionKey | null>("color");
+  const themeMode = useBodyThemeMode();
+
+  
   const [rotationDeg, setRotationDeg] = useState<number>(0);
 
   const [selected, setSelected] = useState<Record<SectionKey, string>>({
@@ -67,8 +96,11 @@ export default function Customize({ onBack }: { onBack: () => void }) {
     [selectedCarId]
   );
 
-  // amit BETÖLTÜNK (cache-biztos)
-  const selectedCarLoadUrl = useMemo(() => customizeCacheUrl(selectedCar.url), [selectedCar.url]);
+  
+  const selectedCarLoadUrl = useMemo(
+    () => customizeCacheUrl(selectedCar.url),
+    [selectedCar.url]
+  );
 
   const toggle = (key: SectionKey) => setOpen((prev) => (prev === key ? null : key));
   const setChoice = (key: SectionKey, value: string) =>
@@ -83,7 +115,7 @@ export default function Customize({ onBack }: { onBack: () => void }) {
 
   const rotY = useMemo(() => (rotationDeg * Math.PI) / 180, [rotationDeg]);
 
-  // ✅ Select popup: kattintás kívül -> bezár
+  
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
       const t = e.target as HTMLElement;
@@ -93,14 +125,42 @@ export default function Customize({ onBack }: { onBack: () => void }) {
     return () => window.removeEventListener("mousedown", onDown);
   }, [selectOpen]);
 
-  // ✅ Mentjük (Home is lássa) — ide a BASE url megy (query NÉLKÜL)
+
+  useEffect(() => {
+  const el = document.querySelector(".customizePage");
+  if (!el) return;
+
+  const onResize = () => {
+    
+      if (window.innerWidth > 980) {
+        (el as HTMLElement).scrollTo({ top: 0, behavior: "instant" as any });
+      }
+    };
+
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const found = CAR_OPTIONS.find((c) => c.url === saved);
+        if (found) setSelectedCarId(found.id);
+      }
+    } catch {}
+    
+  }, []);
+
+  
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, selectedCar.url);
     } catch {}
   }, [selectedCar.url]);
 
-  // ✅ ha valami GLB nem tölt be, visszaállunk a default-ra
+  
   const handleModelError = () => {
     if (selectedCarId !== DEFAULT_CAR.id) setSelectedCarId(DEFAULT_CAR.id);
   };
@@ -141,117 +201,113 @@ export default function Customize({ onBack }: { onBack: () => void }) {
       </header>
 
       <main className="customizeMain">
-        {/* Stage */}
+        {}
         <section className="stageWrap">
           <div className="stageCard">
-  <div className="carStage">
-    {/* ⬇️ FELSŐ RÉSZ: bal nyíl-sáv + model box */}
-    <div className="stageGrid">
-      {/* NYILAK: a model boxon kívül, teljesen balra, középre */}
-      <div className="arrowsColumn">
-        <div className="overlayControls">
-          <button
-            className="dpadLR"
-            type="button"
-            onClick={() => rotate90("left")}
-            aria-label="Rotate left 90 degrees"
-            title="Rotate left 90°"
-          >
-            ◀
-          </button>
-          <button
-            className="dpadLR"
-            type="button"
-            onClick={() => rotate90("right")}
-            aria-label="Rotate right 90 degrees"
-            title="Rotate right 90°"
-          >
-            ▶
-          </button>
-        </div>
-      </div>
+            <div className="carStage">
+              {}
+              <div className="stageGrid">
+                {}
+                <div className="arrowsColumn">
+                  <div className="overlayControls">
+                    <button
+                      className="dpadLR"
+                      type="button"
+                      onClick={() => rotate90("left")}
+                      aria-label="Rotate left 90 degrees"
+                      title="Rotate left 90°"
+                    >
+                      ◀
+                    </button>
+                    <button
+                      className="dpadLR"
+                      type="button"
+                      onClick={() => rotate90("right")}
+                      aria-label="Rotate right 90 degrees"
+                      title="Rotate right 90°"
+                    >
+                      ▶
+                    </button>
+                  </div>
+                </div>
 
-      {/* MODEL BOX */}
-      <div className="viewerColumn">
-        <div className="carViewerWrap">
-          <div className="carViewer3d">
-            <Canvas
-              camera={{ position: [0, 1.55, 8.2], fov: 34 }}
-              dpr={[1, 2]}
-              gl={{ alpha: true, antialias: true }}
-              onCreated={({ gl }) => {
-                gl.setClearColor(0x000000, 0);
-              }}
-            >
-              <Suspense
-                fallback={
-                  <Html center className="glbLoading">
-                    Loading car...
-                  </Html>
-                }
-              >
-                <Scene
-                  carUrl={selectedCar.url}
-                  rotY={rotY}
-                  onModelError={handleModelError}
-                />
-              </Suspense>
-            </Canvas>
-          </div>
-        </div>
-      </div>
-    </div>
+                {}
+                <div className="viewerColumn">
+                  <div className="carViewerWrap">
+                    <div className="carViewer3d">
+                      <Canvas
+                        key={`${selectedCarLoadUrl}-${themeMode}`} 
+                        camera={{ position: [0, 1.55, 8.2], fov: 34 }}
+                        dpr={themeMode === "mono" ? [0.9, 1.3] : [1, 2]}
+                        gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
+                        resize={{ scroll: false, debounce: { resize: 0, scroll: 50 } }}
+                        onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
+                      >
+                        <Suspense
+                          fallback={
+                            <Html center className="glbLoading">
+                              Loading car...
+                            </Html>
+                          }
+                        >
+                          {}
+                          <Scene carUrl={selectedCarLoadUrl} rotY={rotY} onModelError={handleModelError} themeMode={themeMode} />
+                        </Suspense>
+                      </Canvas>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-    {/* ⬇️ ALSÓ RÉSZ: gombok */}
-    <div className="bottomActions">
-      <div className="selectArea">
-        {selectOpen && (
-          <div className="selectPanel" role="dialog" aria-label="Select a car">
-            <div className="selectPanelTitle">Select a car</div>
+              {}
+              <div className="bottomActions">
+                <div className="selectArea">
+                  {selectOpen && (
+                    <div className="selectPanel" role="dialog" aria-label="Select a car">
+                      <div className="selectPanelTitle">Select a car</div>
 
-            <div className="selectList">
-              {CAR_OPTIONS.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  className={`selectItem ${selectedCar.id === c.id ? "active" : ""}`}
-                  onClick={() => {
-                    setSelectedCarId(c.id);
-                    setSelectOpen(false);
-                  }}
-                >
-                  {c.label}
-                  <span className="selectItemFile">({c.url.replace("/models/", "")})</span>
+                      <div className="selectList">
+                        {CAR_OPTIONS.map((c) => (
+                          <button
+                            key={c.id}
+                            type="button"
+                            className={`selectItem ${selectedCar.id === c.id ? "active" : ""}`}
+                            onClick={() => {
+                              setSelectedCarId(c.id);
+                              setSelectOpen(false);
+                            }}
+                          >
+                            {c.label}
+                            <span className="selectItemFile">({c.url.replace("/models/", "")})</span>
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="selectHint">
+                        Tedd a modelleket ide: <b>public/models</b> (URL: <b>/models/...</b>)
+                      </div>
+                    </div>
+                  )}
+
+                  <button
+                    className="wideAction"
+                    type="button"
+                    onClick={() => setSelectOpen((v) => !v)}
+                    aria-expanded={selectOpen}
+                  >
+                    &gt; Select a car
+                  </button>
+                </div>
+
+                <button className="wideAction" type="button" onClick={onGoEngine}>
+                  Engine
                 </button>
-              ))}
-            </div>
-
-            <div className="selectHint">
-              Tedd a modelleket ide: <b>public/models</b> (URL: <b>/models/...</b>)
+              </div>
             </div>
           </div>
-        )}
-
-        <button
-          className="wideAction"
-          type="button"
-          onClick={() => setSelectOpen((v) => !v)}
-          aria-expanded={selectOpen}
-        >
-          &gt; Select a car
-        </button>
-      </div>
-
-      <button className="wideAction" type="button">
-        Engine
-      </button>
-    </div>
-  </div>
-</div>
-
         </section>
 
-        {/* Right panel */}
+        {}
         <aside className="rightPanel">
           <div className="panelCard">
             <MenuItem title="Color" open={open === "color"} onToggle={() => toggle("color")}>
@@ -374,26 +430,26 @@ function MenuItem({
   );
 }
 
-/* =========================
-   3D (Home feeling, NO auto-rotate)
-   ========================= */
 
 function Scene({
   carUrl,
   rotY,
   onModelError,
+  themeMode,
 }: {
   carUrl: string;
   rotY: number;
   onModelError: () => void;
+  themeMode: "blue" | "mono";
 }) {
+  const mono = themeMode === "mono";
+
   return (
     <>
-      {/* Home lights */}
-      <ambientLight intensity={0.55} />
-      <directionalLight position={[4, 7, 4]} intensity={1.05} />
-      <pointLight position={[-4, 2.2, -2]} intensity={1.4} color="#6EE7FF" />
-      <pointLight position={[4, 1.4, 2]} intensity={1.0} color="#6EE7FF" />
+      <ambientLight intensity={mono ? 0.62 : 0.55} />
+      <directionalLight position={[4, 7, 4]} intensity={mono ? 1.15 : 1.05} />
+      <pointLight position={[-4, 2.2, -2]} intensity={mono ? 1.7 : 1.4} color={mono ? "#ffffff" : "#6EE7FF"} />
+      <pointLight position={[4, 1.4, 2]} intensity={mono ? 1.25 : 1.0} color={mono ? "#ffffff" : "#6EE7FF"} />
 
       <ModelErrorBoundary
         resetKey={carUrl}
@@ -404,7 +460,7 @@ function Scene({
           </Html>
         }
       >
-        <Turntable carUrl={carUrl} rotY={rotY} />
+        <Turntable carUrl={carUrl} rotY={rotY} themeMode={themeMode} />
       </ModelErrorBoundary>
 
       <Environment preset="city" />
@@ -419,90 +475,108 @@ function useResponsiveTurntable() {
     const minDim = Math.min(size.width, size.height);
     const t = THREE.MathUtils.clamp((minDim - 320) / (1200 - 320), 0, 1);
 
-    // kicsit nagyobb “feeling”
+    
     const baseScale = THREE.MathUtils.lerp(0.38, 1.0, t);
     const scale = baseScale * 1.08;
 
-    const y = THREE.MathUtils.lerp(0.25, 0.0, t);
+    const y = THREE.MathUtils.lerp(0.05, -0.10, t);
     return { scale, y };
   }, [size.width, size.height]);
 }
 
-function Turntable({ carUrl, rotY }: { carUrl: string; rotY: number }) {
+function Turntable({ carUrl, rotY, themeMode }: { carUrl: string; rotY: number; themeMode: "blue" | "mono" }) {
   const { scale, y } = useResponsiveTurntable();
 
-  // ✅ nincs useFrame -> nincs automata forgás
   return (
     <group scale={scale} position={[0, y, 0]} rotation={[0, rotY, 0]}>
-      <NeonRing />
+      <NeonRing themeMode={themeMode} />
       <CarModel url={carUrl} />
     </group>
   );
 }
 
-function NeonRing() {
+function NeonRing({ themeMode }: { themeMode: "blue" | "mono" }) {
+  const isMono = themeMode === "mono";
+
+  const bodyMat = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: new THREE.Color(isMono ? "#000000" : "#05080d"),
+        emissive: new THREE.Color(isMono ? "#ffffff" : "#1f5eff"),
+        emissiveIntensity: isMono ? 0.3 : 0.18,
+        metalness: 0.35,
+        roughness: 0.42,
+        transparent: true,
+        opacity: 0.98,
+      }),
+    [isMono]
+  );
+
   const coreMat = useMemo(
     () =>
       new THREE.MeshBasicMaterial({
-        color: new THREE.Color("#6EE7FF"),
+        color: new THREE.Color(isMono ? "#ffffff" : "#7ec8ff"),
         transparent: true,
-        opacity: 0.65,
+        opacity: isMono ? 1 : 0.92,
+        blending: THREE.AdditiveBlending,
         depthWrite: false,
         toneMapped: false,
       }),
-    []
+    [isMono]
   );
 
   const glowMat = useMemo(
     () =>
       new THREE.MeshBasicMaterial({
-        color: new THREE.Color("#6EE7FF"),
+        color: new THREE.Color(isMono ? "#ffffff" : "#2f6fff"),
         transparent: true,
-        opacity: 0.55,
+        opacity: isMono ? 0.48 : 0.34,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
         toneMapped: false,
       }),
-    []
+    [isMono]
   );
 
   const haloMat = useMemo(
     () =>
       new THREE.MeshBasicMaterial({
-        color: new THREE.Color("#6EE7FF"),
+        color: new THREE.Color(isMono ? "#ffffff" : "#2b5cff"),
         transparent: true,
-        opacity: 0.12,
+        opacity: isMono ? 0.18 : 0.14,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
         toneMapped: false,
       }),
-    []
+    [isMono]
   );
 
-  const inner = 2.25;
-  const outer = 2.58;
-
   return (
-    <group position={[0, -1.05, 0]}>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.002, 0]}>
-        <ringGeometry args={[inner, outer, 256]} />
+    <group position={[0, -1.02, 0]}>
+      <mesh position={[0, 0.18, 0]}>
+        <cylinderGeometry args={[2.38, 1.92, 0.36, 128, 1, false]} />
+        <primitive object={bodyMat} attach="material" />
+      </mesh>
+
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.362, 0]}>
+        <ringGeometry args={[2.12, 2.38, 256]} />
         <primitive object={coreMat} attach="material" />
       </mesh>
 
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.0, 0]}>
-        <ringGeometry args={[inner - 0.12, outer + 0.14, 256]} />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.366, 0]}>
+        <ringGeometry args={[2.0, 2.55, 256]} />
         <primitive object={glowMat} attach="material" />
       </mesh>
 
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.002, 0]}>
-        <circleGeometry args={[inner - 0.12, 256]} />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.358, 0]}>
+        <circleGeometry args={[2.1, 256]} />
         <primitive object={haloMat} attach="material" />
       </mesh>
     </group>
   );
 }
 
-/** biztonságos clone (ne nyírja ki másik oldal unmountja) */
+
 function deepCloneScene(root: THREE.Object3D) {
   const clone = root.clone(true);
 
@@ -538,17 +612,17 @@ function deepCloneScene(root: THREE.Object3D) {
 function CarModel({ url }: { url: string }) {
   const gltf = useGLTF(url) as any;
 
-  // ✅ clone + dispose fix
+  
   const scene = useMemo(() => deepCloneScene(gltf.scene), [gltf.scene]);
-
+ 
   return (
-    <group position={[0, -0.72, 0]} scale={0.92} dispose={null}>
+    <group position={[0, -0.55, 0]} scale={0.92} dispose={null}>
       <primitive object={scene} dispose={null} />
     </group>
   );
 }
 
-/** ErrorBoundary */
+
 class ModelErrorBoundary extends React.Component<
   { resetKey: string; fallback: React.ReactNode; onError?: () => void; children: React.ReactNode },
   { hasError: boolean }
@@ -575,7 +649,7 @@ class ModelErrorBoundary extends React.Component<
   }
 }
 
-/** preload (a cache-biztos URL-ekkel!) */
+
 for (const c of CAR_OPTIONS) {
   useGLTF.preload(customizeCacheUrl(c.url));
 }

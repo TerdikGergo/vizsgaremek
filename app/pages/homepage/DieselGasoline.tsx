@@ -2,7 +2,6 @@
 
 import React, { Suspense, useMemo, useRef, useState, useEffect } from "react";
 
-
 import { Canvas } from "@react-three/fiber";
 import { Center, Environment, Html, OrbitControls, useGLTF } from "@react-three/drei";
 import { createClient } from "@/lib/supabase/client";
@@ -16,12 +15,9 @@ import {
   resolveStoredModelUrl,
   setActiveProjectStorage,
   setSavedBuildActiveInDatabase,
-  storedValueToOptionId,
-  type SavedCarBuildRow,
 } from "@/lib/garageShared";
 
-
-type Props = { onBack: () => void; onSaved: () => void };
+type Props = { onBack: () => void };
 
 type EngineKey = "V6" | "V8" | "V12" | "Inline" | "Boxer";
 type EngineFamily = "V" | "INLINE" | "BOXER";
@@ -147,9 +143,104 @@ function omegaFromRpm(rpm: number) {
 }
 
 function torqueCurve(engine: EngineConst, rpm: number) {
-  const x = (rpm - engine.rpmPeakT) / (engine.RPM_redline - engine.rpmIdle);
-  const a = 1.6;
-  return clamp(1 - a * x * x, 0, 1);
+  const idle = engine.rpmIdle;
+  const peak = engine.rpmPeakT;
+  const redline = engine.RPM_redline;
+
+  if (rpm <= peak) {
+    const rise = clamp((rpm - idle) / Math.max(peak - idle, 1), 0, 1);
+    return 0.62 + 0.38 * Math.pow(rise, 0.65);
+  }
+
+  const fall = clamp((rpm - peak) / Math.max(redline - peak, 1), 0, 1);
+  return 1.0 - 0.12 * Math.pow(fall, 1.05);
+}
+
+function torqueForTargetPower(engine: EngineConst, omega: number) {
+  return (engine.P_base_kW * 1000) / Math.max(omega, 1e-6);
+}
+
+function buildCombustionTorque(engine: EngineConst, rpm: number, omega: number, throttle: number) {
+  const baseTorque = engine.T_base_Nm * throttle * torqueCurve(engine, rpm);
+
+  if (rpm <= engine.rpmPeakT) {
+    return baseTorque;
+  }
+
+  const blend = clamp(
+    (rpm - engine.rpmPeakT) / Math.max(engine.RPM_redline - engine.rpmPeakT, 1),
+    0,
+    1,
+  );
+
+  const highRpmTorque = torqueForTargetPower(engine, omega) * throttle;
+
+  return (1 - blend) * baseTorque + blend * highRpmTorque;
+}
+
+function materialStrengthScore(material: MaterialProps) {
+  return (
+    0.4 * (material.sigY / 1_030_000_000) +
+    0.35 * (material.sigE / 675_000_000) +
+    0.25 * (material.sigU / 1_350_000_000)
+  );
+}
+
+function materialThermalScore(material: MaterialProps) {
+  return (
+    0.4 * (material.tMaxC / 1050) +
+    0.25 * (material.k / 160) +
+    0.2 * (material.cp / 900) +
+    0.15 * (material.sigY / 1_030_000_000)
+  );
+}
+
+function averageScore(values: number[]) {
+  if (values.length === 0) return 1;
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+function buildMaterialDriveFactors(mats: MaterialProps[]) {
+  const avg = (pick: (m: MaterialProps) => number, fallback: number) =>
+    mats.length ? mats.reduce((s, m) => s + pick(m), 0) / mats.length : fallback;
+
+  const avgStrength = avg(
+    (m) => (m.sigY / 650_000_000 + m.sigU / 1_000_000_000) / 2,
+    0.9,
+  );
+
+  const avgHardness = avg(
+    (m) => m.H / 1_800_000_000,
+    0.9,
+  );
+
+  const avgThermal = avg(
+    (m) => (m.k / 60 + m.tMaxC / 700) / 2,
+    0.9,
+  );
+
+  const avgDensity = avg(
+    (m) => m.rho / 7850,
+    1,
+  );
+
+  return {
+  responseMul: clamp(
+    1.18 + 0.30 * (avgDensity - 1) - 0.28 * (avgStrength - 0.9) - 0.18 * (avgHardness - 0.9),
+    0.68,
+    1.22,
+  ),
+  usableEff: clamp(
+    0.86 + 0.06 * avgThermal + 0.04 * avgHardness,
+    0.84,
+    0.98,
+  ),
+  utilizationMul: clamp(
+    0.72 + 0.16 * avgThermal + 0.12 * avgStrength,
+    0.72,
+    1.0,
+  ),
+  };
 }
 
 function shouldIncludeZero(fn: FnKey) {
@@ -303,8 +394,6 @@ function useBodyThemeMode() {
   return themeMode;
 }
 
-
-
 function EngineModel({ url, engineKey }: { url: string; engineKey: EngineKey }) {
   const gltf = useGLTF(url);
   const scaleByEngine: Record<EngineKey, number> = {
@@ -358,8 +447,6 @@ function Scene({ url, monoMode, engineKey }: { url: string; monoMode: boolean; e
     </>
   );
 }
-
-
 
 type PartUI = {
   key: PartKey;
@@ -505,46 +592,6 @@ function fuelEngineToStoredValue(engineKey: EngineKey): string {
   return String(FUEL_ENGINE_ORDER.indexOf(engineKey));
 }
 
-function storedValueToFuelEngine(storedValue: string | null | undefined): EngineKey | null {
-  if (!storedValue) return null;
-
-  const trimmed = String(storedValue).trim();
-  if ((FUEL_ENGINE_ORDER as string[]).includes(trimmed)) {
-    return trimmed as EngineKey;
-  }
-
-  const parsedIndex = Number.parseInt(trimmed, 10);
-  if (Number.isNaN(parsedIndex)) return null;
-
-  return FUEL_ENGINE_ORDER[parsedIndex] ?? null;
-}
-
-function buildSelectionsFromSavedBuild(
-  ui: { fixed: PartUI[]; bottom: PartUI[] },
-  build: SavedCarBuildRow,
-  family: EngineFamily,
-): Record<PartKey, string> {
-  const savedValues = [
-    build.materials_egy,
-    build.materials_ketto,
-    build.materials_harom,
-    build.materials_negy,
-    build.materials_ot,
-    build.materials_hat,
-  ];
-
-  const nextSelections = { ...defaultSelectionsFor(family) };
-
-  [...ui.fixed, ...ui.bottom].forEach((part, index) => {
-    nextSelections[part.key] = storedValueToOptionId(
-      part.options,
-      savedValues[index],
-      nextSelections[part.key],
-    );
-  });
-
-  return nextSelections;
-}
 
 
 function simulateSeries(db: DbJson, engine: EngineConst, engineKey: EngineKey, selections: Record<PartKey, string>) {
@@ -594,9 +641,48 @@ function simulateSeries(db: DbJson, engine: EngineConst, engineKey: EngineKey, s
   const TMAX_valves = matByPart.get("VALVES")?.tMaxC ?? 700;
   const TMAX_seal = hasSeal ? (matByPart.get(sealKey)?.tMaxC ?? 550) : 1e9;
 
-  const coolingGain = oiling?.coolingGain ?? 1.0;
-  const wearGain = oiling?.wearGain ?? 1.0;
-  const frictionMul = oiling?.frictionLossTorqueMul ?? 1.0;
+  const rotatingParts: PartKey[] = ["PISTON", "ROD", "CRANK", "VALVES"];
+  const extraParts: PartKey[] =
+    family === "V"
+      ? ["V_GIRDLE", "V_TIMING"]
+      : family === "INLINE"
+        ? ["L_DECK", "L_HEADSEAL"]
+        : ["B_HEADSEAL"];
+
+  const strengthScore = averageScore(
+    [...rotatingParts, ...extraParts].map(
+      (part) => materialStrengthScore(matByPart.get(part) ?? db.materials.CAST_STEEL),
+    ),
+  );
+
+  const thermalScore = averageScore(
+    ["PISTON", "VALVES", ...extraParts].map(
+      (part) => materialThermalScore(matByPart.get(part as PartKey) ?? db.materials.CAST_STEEL),
+    ),
+  );
+
+  const driveFx = buildMaterialDriveFactors([...matByPart.values()]);
+
+  const rotatingResponseScore = averageScore(
+    ["PISTON", "ROD", "CRANK", "VALVES"].map((part) => {
+      const mat = matByPart.get(part as PartKey) ?? db.materials.CAST_STEEL;
+      const densityNorm = clamp(7850 / Math.max(mat.rho, 1), 0.55, 1.35);
+
+      return (
+        0.45 * materialStrengthScore(mat) +
+        0.30 * materialThermalScore(mat) +
+        0.25 * densityNorm
+      );
+    }),
+  );
+
+  const rpmResponseMul = clamp(1.28 - 0.32 * rotatingResponseScore, 0.72, 1.15);
+
+  const supportFactor = clamp(0.84 + 0.26 * strengthScore, 0.82, 1.1);
+  const heatGenerationFactor = clamp(1.12 - 0.3 * thermalScore, 0.78, 1.08);
+  const coolingFactor = (oiling?.coolingGain ?? 1.0) * (0.84 + 0.42 * thermalScore);
+  const wearFactor = (oiling?.wearGain ?? 1.0) * (1.22 - 0.38 * strengthScore);
+  const frictionMul = (oiling?.frictionLossTorqueMul ?? 1.0) * (1.06 - 0.1 * strengthScore);
 
   let omega = omegaFromRpm(engine.rpmIdle);
   let v = 0;
@@ -627,17 +713,18 @@ function simulateSeries(db: DbJson, engine: EngineConst, engineKey: EngineKey, s
 
     const thr = throttleAt(t);
     const curve = torqueCurve(engine, rpm);
-    const T_raw = engine.T_base_Nm * thr * curve;
+    const T_raw = buildCombustionTorque(engine, rpm, omega, thr) * supportFactor;
 
     const margin_p = TMAX_piston - Tp;
     const margin_v = TMAX_valves - Tv;
     const margin_s = hasSeal ? TMAX_seal - Ts : 1e9;
     const T_margin = Math.min(margin_p, margin_v, margin_s);
 
-    const heatFactor = clamp(T_margin / g.dTSafe, 0, 1);
+    const heatRatio = clamp(T_margin / Math.max(g.dTSafe, 1), 0, 1);
+    const heatFactor = clamp(0.2 + 0.8 * Math.pow(heatRatio, 0.92), 0.2, 1);
     const T_engine = T_raw * heatFactor;
 
-    const T_loss = (28 + 0.06 * omega) * frictionMul;
+    const T_loss = (26 + 0.055 * omega) * frictionMul;
 
     const F_drag = 0.5 * g.rhoAir * g.CdA * v * v;
     const F_roll = g.Crr * g.mVehicle * g.g;
@@ -647,29 +734,44 @@ function simulateSeries(db: DbJson, engine: EngineConst, engineKey: EngineKey, s
     const T_load_vehicle = (F_res * g.rWheel) / (g.eta * G);
     const T_load = T_loss + T_load_vehicle;
 
-    const alpha = (T_engine - T_load) / Math.max(I_total, 1e-6);
-    omega = omega + alpha * dt;
+    const alpha = (T_engine - T_load) / Math.max(I_total * driveFx.responseMul * rpmResponseMul, 1e-6);
 
-    const rpmClamped = Math.min(rpmFromOmega(omega), engine.RPM_redline);
-    omega = omegaFromRpm(rpmClamped);
+
+    omega = Math.max(omegaFromRpm(engine.rpmIdle), omega + alpha * dt);
+
+
+    const materialRpmCapMul = clamp(
+      0.84 + 0.10 * strengthScore + 0.06 * thermalScore + 0.08 * (1 / Math.max(driveFx.responseMul, 1e-6)),
+      0.82,
+      1.03,
+    );
+
+const thermalRpmCapMul = clamp(0.88 + 0.12 * heatFactor, 0.80, 1.0);
+
+const rpmCap = engine.RPM_redline * materialRpmCapMul * thermalRpmCapMul;
+
+const rpmClamped = Math.min(rpmFromOmega(omega), rpmCap);
+omega = omegaFromRpm(rpmClamped);
 
     const P_kW = (T_engine * omega) / 1000;
-    const P_usable_kW = P_kW;
+    const P_loss_kW = Math.max(0, (T_loss * omega) / 1000);
+    const P_usable_kW = Math.max(0, P_kW * driveFx.usableEff - P_loss_kW);
 
     const Pwheel_W = g.eta * (P_usable_kW * 1000);
     const F_drive = Pwheel_W / Math.max(v, 1.0);
     const a = (F_drive - F_res) / g.mVehicle;
     v = Math.max(0, v + a * dt);
 
-    const Qhot_W = engine.betaHot * (P_kW * 1000);
+    const Qhot_W = engine.betaHot * (P_kW * 1000) * heatGenerationFactor * 0.18;
+    const coolingScale = 3.0;
 
-    const dTp = (0.46 * Qhot_W - g.kCool.piston * coolingGain * (Tp - g.TambC)) / Math.max(C_piston, 1);
-    const dTv = (0.34 * Qhot_W - g.kCool.valves * coolingGain * (Tv - g.TambC)) / Math.max(C_valves, 1);
+    const dTp = (0.46 * Qhot_W - g.kCool.piston * coolingFactor * coolingScale * (Tp - g.TambC)) / Math.max(C_piston, 1);
+    const dTv = (0.34 * Qhot_W - g.kCool.valves * coolingFactor * coolingScale * (Tv - g.TambC)) / Math.max(C_valves, 1);
     Tp = Tp + dTp * dt;
     Tv = Tv + dTv * dt;
 
     if (hasSeal) {
-      const dTs = (0.20 * Qhot_W - g.kCool.seal * coolingGain * (Ts - g.TambC)) / Math.max(C_seal, 1);
+      const dTs = (0.20 * Qhot_W - g.kCool.seal * coolingFactor * coolingScale * 0.85 * (Ts - g.TambC)) / Math.max(C_seal, 1);
       Ts = Ts + dTs * dt;
     }
 
@@ -687,7 +789,7 @@ function simulateSeries(db: DbJson, engine: EngineConst, engineKey: EngineKey, s
       const mat = matByPart.get(part);
       if (!mat) return 0;
       const sTot = sigmaTot(part, Ti);
-      return (0.6 * sTot) / mat.sigE + (0.4 * sTot) / mat.sigU;
+      return (0.55 * sTot) / mat.sigE + (0.45 * sTot) / mat.sigU;
     };
 
     const G_p = goodman("PISTON", Tp);
@@ -697,15 +799,36 @@ function simulateSeries(db: DbJson, engine: EngineConst, engineKey: EngineKey, s
 
     const Tcrit = Math.max(Tp, Tv, hasSeal ? Ts : 0);
     const TcritMax = Math.max(TMAX_piston, TMAX_valves, hasSeal ? TMAX_seal : 0);
+    const fatigueReserve = clamp(0.86 + 0.18 * strengthScore, 0.86, 1.08);
 
-    const kD = 0.03;
-    const kT = 0.02;
-    const damageRate =
-      (kD * Math.max(0, G_worst - 1) + kT * Math.max(0, Tcrit / Math.max(TcritMax, 1) - 1)) * wearGain;
-    D = clamp(D + damageRate * dt, 0, 1);
+    const kD = 0.01;
+const kT = 0.006;
+const damageRate =
+  (kD * Math.max(0, G_worst - fatigueReserve) +
+    kT * Math.max(0, Tcrit / Math.max(TcritMax, 1) - 0.96)) * wearFactor;
+D = clamp(D + damageRate * dt, 0, 1);
 
-    const durability = 100 * (1 - D);
-    const U_rpm = rpmClamped / engine.RPM_redline;
+const durability = 100 * (1 - D);
+
+const rpmRatio = clamp(rpmClamped / engine.RPM_redline, 0, 1);
+const torqueUse = clamp((T_engine - T_loss) / Math.max(T_raw, 1e-6), 0, 1);
+const thermalUse = clamp(T_margin / Math.max(g.dTSafe, 1), 0, 1);
+const materialUse = clamp(
+  0.5 * clamp(strengthScore, 0, 1.2) +
+    0.3 * clamp(thermalScore, 0, 1.2) +
+    0.2 * clamp(1 / Math.max(driveFx.responseMul, 1e-6), 0, 1.25),
+  0,
+  1,
+);
+
+const U_rpm = clamp(
+  0.50 * rpmRatio +
+    0.20 * torqueUse +
+    0.15 * thermalUse +
+    0.15 * materialUse,
+  0,
+  1,
+);
 
     out["RPM(t)"].push({ t, y: rpmClamped });
     out["Power P(t) [kW]"].push({ t, y: P_kW });
@@ -721,8 +844,6 @@ function simulateSeries(db: DbJson, engine: EngineConst, engineKey: EngineKey, s
 
   return out;
 }
-
-
 
 function SvgChart({ fn, series, animateKey }: { fn: FnKey; series: SeriesPoint[] | null; animateKey: number }) {
   const W = 420;
@@ -838,9 +959,7 @@ function SvgChart({ fn, series, animateKey }: { fn: FnKey; series: SeriesPoint[]
   );
 }
 
-
-
-export default function DieselGasoline({ onBack, onSaved }: Props) {
+export default function DieselGasoline({ onBack }: Props) {
   const supabase = useMemo(() => createClient(), []);
   const [db, setDb] = useState<DbJson | null>(null);
   const themeMode = useBodyThemeMode();
@@ -849,8 +968,6 @@ export default function DieselGasoline({ onBack, onSaved }: Props) {
   const [selectedEngine, setSelectedEngine] = useState<EngineKey>("V12");
   const [materialsOpen, setMaterialsOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
-  const [existingBuild, setExistingBuild] = useState<SavedCarBuildRow | null>(null);
-  const [hasAppliedExistingBuild, setHasAppliedExistingBuild] = useState(true);
   const [saveBusy, setSaveBusy] = useState(false);
 
   const [chartFn, setChartFn] = useState<FnKey[]>([
@@ -879,62 +996,7 @@ export default function DieselGasoline({ onBack, onSaved }: Props) {
     })();
   }, []);
 
-  React.useEffect(() => {
-    let ignore = false;
 
-    const editingBuildId =
-      typeof window === "undefined"
-        ? null
-        : localStorage.getItem(EDITING_BUILD_ID_KEY);
-
-    if (!editingBuildId) {
-      setExistingBuild(null);
-      setHasAppliedExistingBuild(true);
-      return;
-    }
-
-    (async () => {
-      try {
-        const { data: authData } = await supabase.auth.getUser();
-        const user = authData.user;
-
-        let query = supabase
-          .from("saved_car_builds")
-          .select(
-            "id, user_id, name, model_url, engine_type, engine, materials_egy, materials_ketto, materials_harom, materials_negy, materials_ot, materials_hat, is_active",
-          )
-          .eq("id", editingBuildId);
-
-        if (user) {
-          query = query.eq("user_id", user.id);
-        }
-
-        const { data, error } = await query.single();
-        if (error) throw error;
-        if (ignore) return;
-
-        const build = data as SavedCarBuildRow;
-        setExistingBuild(build);
-        setHasAppliedExistingBuild(false);
-
-        if (build.engine_type !== "Electric") {
-          const storedEngine = storedValueToFuelEngine(build.engine);
-          if (storedEngine) {
-            setSelectedEngine(storedEngine);
-          }
-        }
-      } catch {
-        if (!ignore) {
-          setExistingBuild(null);
-          setHasAppliedExistingBuild(true);
-        }
-      }
-    })();
-
-    return () => {
-      ignore = true;
-    };
-  }, [supabase]);
 
   const isLoading = !db && !dbErr;
   const hasError = !!dbErr;
@@ -947,14 +1009,7 @@ export default function DieselGasoline({ onBack, onSaved }: Props) {
     setSelections(defaultSelectionsFor(familySafe));
   }, [selectedEngine, familySafe]);
 
-  React.useEffect(() => {
-    if (!existingBuild || existingBuild.engine_type === "Electric" || hasAppliedExistingBuild) {
-      return;
-    }
 
-    setSelections(buildSelectionsFromSavedBuild(getPartUI(familySafe), existingBuild, familySafe));
-    setHasAppliedExistingBuild(true);
-  }, [existingBuild, familySafe, hasAppliedExistingBuild]);
 
   const { fixed, bottom } = useMemo(() => getPartUI(familySafe), [familySafe]);
 
@@ -984,7 +1039,7 @@ export default function DieselGasoline({ onBack, onSaved }: Props) {
 
     const enteredName = window.prompt(
       "Enter the name of your project",
-      existingBuild?.name?.trim() || "My Project",
+      "My Project",
     );
 
     if (enteredName === null) return;
@@ -1016,26 +1071,26 @@ export default function DieselGasoline({ onBack, onSaved }: Props) {
       }
 
       const { error: deactivateError } = await supabase
-  .from("saved_car_builds")
-  .update({ is_active: false })
-  .eq("user_id", user.id);
+        .from("saved_car_builds")
+        .update({ is_active: false })
+        .eq("user_id", user.id);
 
-if (deactivateError) throw deactivateError;
+      if (deactivateError) throw deactivateError;
 
-const payload = {
-  user_id: user.id,
-  model_url: storedModelUrl,
-  name: trimmedName,
-  engine_type: "Diesel/Gasoline",
-  engine: fuelEngineToStoredValue(selectedEngine),
-  materials_egy: materialValues[0],
-  materials_ketto: materialValues[1],
-  materials_harom: materialValues[2],
-  materials_negy: materialValues[3],
-  materials_ot: materialValues[4],
-  materials_hat: materialValues[5],
-  is_active: true,
-};
+      const payload = {
+        user_id: user.id,
+        model_url: storedModelUrl,
+        name: trimmedName,
+        engine_type: "Diesel/Gasoline",
+        engine: fuelEngineToStoredValue(selectedEngine),
+        materials_egy: materialValues[0],
+        materials_ketto: materialValues[1],
+        materials_harom: materialValues[2],
+        materials_negy: materialValues[3],
+        materials_ot: materialValues[4],
+        materials_hat: materialValues[5],
+        is_active: true,
+      };
 
       const editingBuildId =
         typeof window === "undefined"
@@ -1073,7 +1128,6 @@ const payload = {
       await setSavedBuildActiveInDatabase(supabase, user.id, savedBuildId);
       clearEditingProjectStorage();
       setActiveProjectStorage(savedBuildId, currentDraftUrl);
-      onSaved();
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to save this project.";
@@ -1084,28 +1138,26 @@ const payload = {
   };
 
   const fmtValue = (fn: FnKey, value: number) => {
-  if (fn.includes("RPM")) return `${Math.round(value)}`;
-  if (fn.includes("[kW]")) return `${value.toFixed(0)} kW`;
-  if (fn.includes("[km/h]")) return `${value.toFixed(0)} km/h`;
-  if (fn.includes("[°C]")) return `${value.toFixed(0)} °C`;
-  if (fn.includes("[%]")) return `${value.toFixed(0)}%`;
-  if (fn.includes("U_RPM")) return `${value.toFixed(2)}`;
-  if (fn.includes("ΔT")) return `${value.toFixed(0)} °C`;
-  return `${value.toFixed(2)}`;
-};
+    if (fn.includes("RPM")) return `${Math.round(value)}`;
+    if (fn.includes("[kW]")) return `${value.toFixed(0)} kW`;
+    if (fn.includes("[km/h]")) return `${value.toFixed(0)} km/h`;
+    if (fn.includes("[°C]")) return `${value.toFixed(0)} °C`;
+    if (fn.includes("[%]")) return `${value.toFixed(0)}%`;
+    if (fn.includes("U_RPM")) return `${value.toFixed(2)}`;
+    if (fn.includes("ΔT")) return `${value.toFixed(0)} °C`;
+    return `${value.toFixed(2)}`;
+  };
 
-
-const cardValue = (fn: FnKey) => {
-  const s = seriesMap?.[fn];
-  if (!s || s.length === 0) return "-";
-  return fmtValue(fn, s[s.length - 1].y);
-};
-
+  const cardValue = (fn: FnKey) => {
+    const s = seriesMap?.[fn];
+    if (!s || s.length === 0) return "-";
+    return fmtValue(fn, s[s.length - 1].y);
+  };
 
   return (
     <div className="fuelPageRoot">
       <div className="home-bg" />
- 
+
       <div className="fuelLayout">
         <section className="fuelLeft">
           <div className="fuelTop">
@@ -1211,8 +1263,8 @@ const cardValue = (fn: FnKey) => {
                       <button className="fuelBtn fuelBtnPrimary" onClick={onCalculate} type="button" disabled={!db}>
                         Calculate
                       </button>
-                      <button className="fuelBtn" onClick={onSave} type="button" disabled={saveBusy}>
-                        {saveBusy ? "Saving..." : "Save"}
+                      <button className="fuelBtn" onClick={onSave} type="button">
+                        Save
                       </button>
                       <button className="fuelBtn" onClick={() => setMaterialsOpen(false)} type="button">
                         Close

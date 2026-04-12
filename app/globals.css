@@ -1261,6 +1261,9 @@ body.theme-mono .garage-saveHeader {
   
   display: grid;
   align-content: start;
+  overflow: hidden;
+  position: relative;
+  isolation: isolate;
 }
 
 .menuItem { border-bottom: 1px solid rgba(120, 210, 255, 0.18); }
@@ -1663,12 +1666,17 @@ body.theme-mono .glbLoading{
 }
 
 .engineHelpBubble {
-  top: calc(100% + 12px);
+  top: calc(100% + 28px);
   right: 0;
   width: min(500px, 62vw);
   border-radius: 16px;
   pointer-events: auto;
   position: absolute;
+}
+
+.fuelHelpBubble.engineHelpBubble {
+  top: calc(100% + 72px) !important;
+  right: 0;
 }
 
 .engineHelpBubble::before {
@@ -1692,7 +1700,7 @@ body.theme-blue .engineCornerHelpBtn:focus {
     0 0 0 2px rgba(0,0,0,0.18) inset,
     0 0 22px rgba(64, 220, 255, 0.16),
     0 14px 40px rgba(0, 0, 0, 0.45) !important;
-  transform: translateY(-50%) translateY(-1px);
+  transform: none;
 }
 
 body.theme-blue .engineCornerHelpBtn {
@@ -1705,6 +1713,10 @@ body.theme-blue .engineCornerHelpBtn:focus {
   text-shadow:
     0 0 10px rgba(110, 231, 255, 0.55),
     0 0 22px rgba(74, 163, 255, 0.25) !important;
+}
+
+body.theme-blue .engineCornerHelpBtn:active {
+  transform: none;
 }
 
 body.theme-mono .engineCornerHelpBtn {
@@ -3271,6 +3283,26 @@ body.theme-blue .wideAction:hover {
 
 body.theme-blue .menuHeader:hover {
   background: rgba(255,255,255,0.05) !important;
+}
+
+body.theme-blue .panelCard > .menuItem {
+  overflow: hidden;
+}
+
+body.theme-blue .panelCard > .menuItem:first-child {
+  border-top-left-radius: 22px;
+  border-top-right-radius: 22px;
+}
+
+body.theme-blue .panelCard > .menuItem:last-child {
+  border-bottom: none;
+  border-bottom-left-radius: 22px;
+  border-bottom-right-radius: 22px;
+}
+
+body.theme-blue .panelCard > .menuItem:last-child .menuHeader {
+  border-bottom-left-radius: 22px;
+  border-bottom-right-radius: 22px;
 }
 
 body.theme-mono .backBtn {

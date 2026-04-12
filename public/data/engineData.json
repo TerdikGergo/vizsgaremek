@@ -11,10 +11,16 @@
     "finalDrive": 3.2,
     "SF": 1.7,
     "TambC": 25,
-    "dTSafe": 80,
+    "dTSafe": 105,
     "dt": 0.01,
     "simT": 10.0,
-    "kCool": { "piston": 130, "valves": 90, "seal": 75, "timing": 60, "girdle": 60 }
+    "kCool": {
+      "piston": 155,
+      "valves": 112,
+      "seal": 92,
+      "timing": 80,
+      "girdle": 80
+    }
   },
   "engineModels": {
     "V6": "/models/v6_car_engine.glb",
@@ -25,53 +31,358 @@
     "INLINE4": "/models/inline-4_engine.glb"
   },
   "materials": {
-    "CAST_AL": { "rho": 2680, "E": 70000000000, "nu": 0.33, "alpha": 0.000021, "sigY": 120000000, "sigU": 220000000, "sigE": 110000000, "k": 150, "cp": 900, "tMaxC": 350, "H": 350000000 },
-    "FORGED_AL_2618": { "rho": 2760, "E": 73000000000, "nu": 0.33, "alpha": 0.000023, "sigY": 360000000, "sigU": 440000000, "sigE": 220000000, "k": 160, "cp": 875, "tMaxC": 450, "H": 550000000 },
-    "TI_G5": { "rho": 4430, "E": 114000000000, "nu": 0.34, "alpha": 0.000009, "sigY": 880000000, "sigU": 950000000, "sigE": 475000000, "k": 7, "cp": 560, "tMaxC": 650, "H": 1100000000 },
-
-    "CAST_STEEL": { "rho": 7850, "E": 200000000000, "nu": 0.29, "alpha": 0.000012, "sigY": 350000000, "sigU": 600000000, "sigE": 300000000, "k": 45, "cp": 475, "tMaxC": 600, "H": 1300000000 },
-    "STEEL_4140": { "rho": 7850, "E": 205000000000, "nu": 0.29, "alpha": 0.000012, "sigY": 655000000, "sigU": 1020000000, "sigE": 510000000, "k": 42, "cp": 475, "tMaxC": 650, "H": 1800000000 },
-    "STEEL_4340": { "rho": 7850, "E": 205000000000, "nu": 0.29, "alpha": 0.000012, "sigY": 850000000, "sigU": 1250000000, "sigE": 625000000, "k": 44, "cp": 475, "tMaxC": 700, "H": 2100000000 },
-    "BILLET_4340_NITR": { "rho": 7850, "E": 205000000000, "nu": 0.29, "alpha": 0.000012, "sigY": 950000000, "sigU": 1350000000, "sigE": 675000000, "k": 44, "cp": 475, "tMaxC": 750, "H": 2400000000 },
-
-    "SS_BASE": { "rho": 7900, "E": 193000000000, "nu": 0.29, "alpha": 0.000017, "sigY": 290000000, "sigU": 620000000, "sigE": 310000000, "k": 16, "cp": 500, "tMaxC": 700, "H": 1200000000 },
-    "VALVE_21_4N": { "rho": 7700, "E": 215000000000, "nu": 0.29, "alpha": 0.000018, "sigY": 600000000, "sigU": 1100000000, "sigE": 550000000, "k": 25, "cp": 500, "tMaxC": 800, "H": 1600000000 },
-    "IN718": { "rho": 8190, "E": 200000000000, "nu": 0.29, "alpha": 0.000013, "sigY": 1030000000, "sigU": 1240000000, "sigE": 620000000, "k": 11, "cp": 435, "tMaxC": 1050, "H": 2200000000 },
-
-    "GASKET_COMP": { "rho": 1800, "E": 10000000000, "nu": 0.2, "alpha": 0.000005, "sigY": 40000000, "sigU": 80000000, "sigE": 40000000, "k": 80, "cp": 700, "tMaxC": 550, "H": 150000000 },
-    "MLS_SS": { "rho": 7900, "E": 193000000000, "nu": 0.29, "alpha": 0.000017, "sigY": 290000000, "sigU": 620000000, "sigE": 310000000, "k": 16, "cp": 500, "tMaxC": 700, "H": 1200000000 },
-    "ORING_SS": { "rho": 7900, "E": 193000000000, "nu": 0.29, "alpha": 0.000017, "sigY": 290000000, "sigU": 620000000, "sigE": 310000000, "k": 16, "cp": 500, "tMaxC": 750, "H": 1200000000 }
+    "CAST_AL": {
+      "rho": 2680,
+      "E": 70000000000,
+      "nu": 0.33,
+      "alpha": 2.1e-05,
+      "sigY": 120000000,
+      "sigU": 220000000,
+      "sigE": 110000000,
+      "k": 150,
+      "cp": 900,
+      "tMaxC": 350,
+      "H": 350000000
+    },
+    "FORGED_AL_2618": {
+      "rho": 2760,
+      "E": 73000000000,
+      "nu": 0.33,
+      "alpha": 2.3e-05,
+      "sigY": 360000000,
+      "sigU": 440000000,
+      "sigE": 220000000,
+      "k": 160,
+      "cp": 875,
+      "tMaxC": 450,
+      "H": 550000000
+    },
+    "TI_G5": {
+      "rho": 4430,
+      "E": 114000000000,
+      "nu": 0.34,
+      "alpha": 9e-06,
+      "sigY": 880000000,
+      "sigU": 950000000,
+      "sigE": 475000000,
+      "k": 7,
+      "cp": 560,
+      "tMaxC": 650,
+      "H": 1100000000
+    },
+    "CAST_STEEL": {
+      "rho": 7850,
+      "E": 200000000000,
+      "nu": 0.29,
+      "alpha": 1.2e-05,
+      "sigY": 350000000,
+      "sigU": 600000000,
+      "sigE": 300000000,
+      "k": 45,
+      "cp": 475,
+      "tMaxC": 600,
+      "H": 1300000000
+    },
+    "STEEL_4140": {
+      "rho": 7850,
+      "E": 205000000000,
+      "nu": 0.29,
+      "alpha": 1.2e-05,
+      "sigY": 655000000,
+      "sigU": 1020000000,
+      "sigE": 510000000,
+      "k": 42,
+      "cp": 475,
+      "tMaxC": 650,
+      "H": 1800000000
+    },
+    "STEEL_4340": {
+      "rho": 7850,
+      "E": 205000000000,
+      "nu": 0.29,
+      "alpha": 1.2e-05,
+      "sigY": 850000000,
+      "sigU": 1250000000,
+      "sigE": 625000000,
+      "k": 44,
+      "cp": 475,
+      "tMaxC": 700,
+      "H": 2100000000
+    },
+    "BILLET_4340_NITR": {
+      "rho": 7850,
+      "E": 205000000000,
+      "nu": 0.29,
+      "alpha": 1.2e-05,
+      "sigY": 950000000,
+      "sigU": 1350000000,
+      "sigE": 675000000,
+      "k": 44,
+      "cp": 475,
+      "tMaxC": 750,
+      "H": 2400000000
+    },
+    "SS_BASE": {
+      "rho": 7900,
+      "E": 193000000000,
+      "nu": 0.29,
+      "alpha": 1.7e-05,
+      "sigY": 290000000,
+      "sigU": 620000000,
+      "sigE": 310000000,
+      "k": 16,
+      "cp": 500,
+      "tMaxC": 700,
+      "H": 1200000000
+    },
+    "VALVE_21_4N": {
+      "rho": 7700,
+      "E": 215000000000,
+      "nu": 0.29,
+      "alpha": 1.8e-05,
+      "sigY": 600000000,
+      "sigU": 1100000000,
+      "sigE": 550000000,
+      "k": 25,
+      "cp": 500,
+      "tMaxC": 800,
+      "H": 1600000000
+    },
+    "IN718": {
+      "rho": 8190,
+      "E": 200000000000,
+      "nu": 0.29,
+      "alpha": 1.3e-05,
+      "sigY": 1030000000,
+      "sigU": 1240000000,
+      "sigE": 620000000,
+      "k": 11,
+      "cp": 435,
+      "tMaxC": 1050,
+      "H": 2200000000
+    },
+    "GASKET_COMP": {
+      "rho": 1800,
+      "E": 10000000000,
+      "nu": 0.2,
+      "alpha": 5e-06,
+      "sigY": 40000000,
+      "sigU": 80000000,
+      "sigE": 40000000,
+      "k": 80,
+      "cp": 700,
+      "tMaxC": 550,
+      "H": 150000000
+    },
+    "MLS_SS": {
+      "rho": 7900,
+      "E": 193000000000,
+      "nu": 0.29,
+      "alpha": 1.7e-05,
+      "sigY": 290000000,
+      "sigU": 620000000,
+      "sigE": 310000000,
+      "k": 16,
+      "cp": 500,
+      "tMaxC": 700,
+      "H": 1200000000
+    },
+    "ORING_SS": {
+      "rho": 7900,
+      "E": 193000000000,
+      "nu": 0.29,
+      "alpha": 1.7e-05,
+      "sigY": 290000000,
+      "sigU": 620000000,
+      "sigE": 310000000,
+      "k": 16,
+      "cp": 500,
+      "tMaxC": 750,
+      "H": 1200000000
+    }
   },
   "geo": {
-    "PISTON": { "V": 0.00018, "A": 0.0003, "r": 0.04, "L": 0.01, "lambdaI": 0.5 },
-    "ROD": { "V": 0.000076, "A": 0.00025, "r": 0.05, "L": 0.12, "lambdaI": 0.6 },
-    "CRANK": { "V": 0.0023, "A": 0.0006, "r": 0.06, "L": 0.4, "lambdaI": 0.5 },
-    "VALVES": { "V": 0.000013, "A": 0.00005, "r": 0.015, "L": 0.08, "lambdaI": 1.0 },
-
-    "V_GIRDLE": { "V": 0.0003, "A": 0.0005, "r": 0.05, "L": 0.08, "lambdaI": 0.3 },
-    "V_TIMING": { "V": 0.0002, "A": 0.0003, "r": 0.04, "L": 0.06, "lambdaI": 0.4 },
-
-    "L_DECK": { "V": 0.0004, "A": 0.0006, "r": 0.05, "L": 0.1, "lambdaI": 0.2 },
-    "L_HEADSEAL": { "V": 0.00001, "A": 0.01, "r": 0.0, "L": 0.001, "lambdaI": 0.0 },
-
-    "B_OILING": { "V": 0.000001, "A": 0.000001, "r": 0.0, "L": 0.001, "lambdaI": 0.0 },
-    "B_HEADSEAL": { "V": 0.00001, "A": 0.01, "r": 0.0, "L": 0.001, "lambdaI": 0.0 }
+    "PISTON": {
+      "V": 0.00018,
+      "A": 0.0003,
+      "r": 0.04,
+      "L": 0.01,
+      "lambdaI": 0.5
+    },
+    "ROD": {
+      "V": 7.6e-05,
+      "A": 0.00025,
+      "r": 0.05,
+      "L": 0.12,
+      "lambdaI": 0.6
+    },
+    "CRANK": {
+      "V": 0.0023,
+      "A": 0.0006,
+      "r": 0.06,
+      "L": 0.4,
+      "lambdaI": 0.5
+    },
+    "VALVES": {
+      "V": 1.3e-05,
+      "A": 5e-05,
+      "r": 0.015,
+      "L": 0.08,
+      "lambdaI": 1.0
+    },
+    "V_GIRDLE": {
+      "V": 0.0003,
+      "A": 0.0005,
+      "r": 0.05,
+      "L": 0.08,
+      "lambdaI": 0.3
+    },
+    "V_TIMING": {
+      "V": 0.0002,
+      "A": 0.0003,
+      "r": 0.04,
+      "L": 0.06,
+      "lambdaI": 0.4
+    },
+    "L_DECK": {
+      "V": 0.0004,
+      "A": 0.0006,
+      "r": 0.05,
+      "L": 0.1,
+      "lambdaI": 0.2
+    },
+    "L_HEADSEAL": {
+      "V": 1e-05,
+      "A": 0.01,
+      "r": 0.0,
+      "L": 0.001,
+      "lambdaI": 0.0
+    },
+    "B_OILING": {
+      "V": 1e-06,
+      "A": 1e-06,
+      "r": 0.0,
+      "L": 0.001,
+      "lambdaI": 0.0
+    },
+    "B_HEADSEAL": {
+      "V": 1e-05,
+      "A": 0.01,
+      "r": 0.0,
+      "L": 0.001,
+      "lambdaI": 0.0
+    }
   },
   "engines": {
-    "V6": { "family": "V", "P_base_kW": 261, "T_base_Nm": 450, "RPM_redline": 6500, "betaHot": 1.9, "pBase_bar": 130, "rCyl": 0.045, "tWall": 0.006, "rpmIdle": 900, "rpmPeakT": 3500 },
-    "V8": { "family": "V", "P_base_kW": 373, "T_base_Nm": 650, "RPM_redline": 6500, "betaHot": 2.0, "pBase_bar": 150, "rCyl": 0.048, "tWall": 0.0065, "rpmIdle": 900, "rpmPeakT": 3800 },
-    "V12": { "family": "V", "P_base_kW": 485, "T_base_Nm": 800, "RPM_redline": 7000, "betaHot": 2.1, "pBase_bar": 160, "rCyl": 0.05, "tWall": 0.007, "rpmIdle": 900, "rpmPeakT": 4200 },
-    "Inline": { "family": "INLINE", "P_base_kW": 313, "T_base_Nm": 550, "RPM_redline": 7000, "betaHot": 2.0, "pBase_bar": 145, "rCyl": 0.047, "tWall": 0.0065, "rpmIdle": 900, "rpmPeakT": 3600 },
-    "Boxer": { "family": "BOXER", "P_base_kW": 294, "T_base_Nm": 520, "RPM_redline": 7000, "betaHot": 2.05, "pBase_bar": 140, "rCyl": 0.047, "tWall": 0.006, "rpmIdle": 900, "rpmPeakT": 3400 },
-    "INLINE4": { "family": "INLINE", "P_base_kW": 240, "T_base_Nm": 460, "RPM_redline": 16000, "betaHot": 1.15, "pBase_bar": 0, "rCyl": 0.047, "tWall": 0.0065, "rpmIdle": 900, "rpmPeakT": 2600 }
+    "V6": {
+      "family": "V",
+      "P_base_kW": 261,
+      "T_base_Nm": 450,
+      "RPM_redline": 6500,
+      "betaHot": 1.16,
+      "pBase_bar": 130,
+      "rCyl": 0.045,
+      "tWall": 0.006,
+      "rpmIdle": 900,
+      "rpmPeakT": 3500
+    },
+    "V8": {
+      "family": "V",
+      "P_base_kW": 373,
+      "T_base_Nm": 650,
+      "RPM_redline": 6500,
+      "betaHot": 1.21,
+      "pBase_bar": 150,
+      "rCyl": 0.048,
+      "tWall": 0.0065,
+      "rpmIdle": 900,
+      "rpmPeakT": 3800
+    },
+    "V12": {
+      "family": "V",
+      "P_base_kW": 485,
+      "T_base_Nm": 800,
+      "RPM_redline": 7000,
+      "betaHot": 1.25,
+      "pBase_bar": 160,
+      "rCyl": 0.05,
+      "tWall": 0.007,
+      "rpmIdle": 900,
+      "rpmPeakT": 4200
+    },
+    "Inline": {
+      "family": "INLINE",
+      "P_base_kW": 313,
+      "T_base_Nm": 550,
+      "RPM_redline": 7000,
+      "betaHot": 1.17,
+      "pBase_bar": 145,
+      "rCyl": 0.047,
+      "tWall": 0.0065,
+      "rpmIdle": 900,
+      "rpmPeakT": 3600
+    },
+    "Boxer": {
+      "family": "BOXER",
+      "P_base_kW": 294,
+      "T_base_Nm": 520,
+      "RPM_redline": 7000,
+      "betaHot": 1.16,
+      "pBase_bar": 140,
+      "rCyl": 0.047,
+      "tWall": 0.006,
+      "rpmIdle": 900,
+      "rpmPeakT": 3400
+    },
+    "INLINE4": {
+      "family": "INLINE",
+      "P_base_kW": 240,
+      "T_base_Nm": 460,
+      "RPM_redline": 16000,
+      "betaHot": 0.58,
+      "pBase_bar": 0,
+      "rCyl": 0.047,
+      "tWall": 0.0065,
+      "rpmIdle": 900,
+      "rpmPeakT": 2600
+    }
   },
   "electric": {
     "model": "/models/inline-4_engine.glb",
-    "baseEngine": { "family": "INLINE", "P_base_kW": 240, "T_base_Nm": 460, "RPM_redline": 16000, "betaHot": 1.15, "pBase_bar": 0, "rCyl": 0.047, "tWall": 0.0065, "rpmIdle": 900, "rpmPeakT": 2600 }
+    "baseEngine": {
+      "family": "INLINE",
+      "P_base_kW": 240,
+      "T_base_Nm": 460,
+      "RPM_redline": 16000,
+      "betaHot": 0.58,
+      "pBase_bar": 0,
+      "rCyl": 0.047,
+      "tWall": 0.0065,
+      "rpmIdle": 900,
+      "rpmPeakT": 2600
+    }
   },
   "oiling": [
-    { "id": "WET", "label": "Wet sump", "coolingGain": 1.0, "wearGain": 1.0, "frictionLossTorqueMul": 1.0 },
-    { "id": "BAFFLED", "label": "Baffled + pump", "coolingGain": 1.1, "wearGain": 0.85, "frictionLossTorqueMul": 1.05 },
-    { "id": "DRY", "label": "Dry sump", "coolingGain": 1.25, "wearGain": 0.7, "frictionLossTorqueMul": 1.1 }
+    {
+      "id": "WET",
+      "label": "Wet sump",
+      "coolingGain": 1.0,
+      "wearGain": 1.0,
+      "frictionLossTorqueMul": 1.0
+    },
+    {
+      "id": "BAFFLED",
+      "label": "Baffled + pump",
+      "coolingGain": 1.1,
+      "wearGain": 0.85,
+      "frictionLossTorqueMul": 1.05
+    },
+    {
+      "id": "DRY",
+      "label": "Dry sump",
+      "coolingGain": 1.25,
+      "wearGain": 0.7,
+      "frictionLossTorqueMul": 1.1
+    }
   ]
 }

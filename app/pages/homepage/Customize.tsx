@@ -277,8 +277,6 @@ export default function Customize({
 
   return (
     <div className="home-root customizePage">
-      <div className="home-bg" />
-
       <div className="customizeBg" aria-hidden="true">
         <div className="bgGlow" />
         <div className="bgGrid" />

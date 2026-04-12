@@ -10,6 +10,7 @@ import * as THREE from "three";
 
 import Garage from "./Garage";
 import Customize from "./Customize";
+import AboutUs from "./AboutUs";
 import { createClient } from "@/lib/supabase/client";
 import {
   ACTIVE_MODEL_URL_KEY,
@@ -474,6 +475,10 @@ if (!data || data.length === 0) {
 
   if (active === "Electric") {
     return <Electric onBack={() => setActive("Engine")} onSaved={handleProjectSaved} />;
+  }
+
+  if (active === "About Us") {
+    return <AboutUs onBack={() => setActive("Home")} />;
   }
 
   return (

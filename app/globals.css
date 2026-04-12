@@ -925,6 +925,7 @@ body.theme-mono .garage-saveHeader {
   overflow: hidden;    
   color: rgba(255, 255, 255, 0.92);
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: linear-gradient(180deg, rgba(3, 12, 26, 0.98), rgba(3, 10, 20, 0.98));
 }
 
 
@@ -1350,6 +1351,62 @@ body.theme-mono .glbLoading{
   display: grid;
 }
 
+.aboutMain {
+  grid-template-columns: 1fr;
+  padding-bottom: 24px;
+}
+
+.aboutPageRoot {
+  overflow: hidden;
+}
+
+.aboutStageCard {
+  overflow: hidden;
+  min-height: calc(100vh - 110px);
+  min-height: calc(100dvh - 110px);
+}
+
+.aboutContent {
+  position: absolute;
+  inset: 0;
+  padding: 48px 56px 56px;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+  color: rgba(235, 250, 255, 0.92);
+  font-size: clamp(22px, 1.5vw, 29px);
+  line-height: 1.9;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(120, 210, 255, 0.45) transparent;
+}
+
+.aboutInner {
+  width: min(100%, 1380px);
+  display: grid;
+  align-content: start;
+  gap: 30px;
+}
+
+.aboutParagraph {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.aboutContent::-webkit-scrollbar {
+  width: 12px;
+}
+
+.aboutContent::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.aboutContent::-webkit-scrollbar-thumb {
+  background: rgba(120, 210, 255, 0.45);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
 .overlayControls{
   position: static;
   transform: translateY(18px); 
@@ -1377,9 +1434,36 @@ body.theme-mono .glbLoading{
     -webkit-overflow-scrolling: touch;
   }
 
+  .aboutPageRoot{
+    height: 100vh !important;
+    height: 100dvh !important;
+    overflow: hidden !important;
+  }
+
   .customizeMain{
     height: auto;              /* ✅ page nőhet */
     padding-bottom: 140px;     /* ✅ legyen hely a legaljára görgetni */
+  }
+
+  .aboutMain{
+    height: calc(100vh - 96px);
+    height: calc(100dvh - 96px);
+    padding-bottom: 18px;
+  }
+
+  .aboutStageCard{
+    min-height: calc(100vh - 110px);
+    min-height: calc(100dvh - 110px);
+  }
+
+  .aboutContent{
+    padding: 34px 30px 38px;
+    font-size: clamp(18px, 2.5vw, 22px);
+    line-height: 1.8;
+  }
+
+  .aboutInner{
+    gap: 24px;
   }
 
   .stageCard{
@@ -1399,6 +1483,15 @@ body.theme-mono .glbLoading{
 
   .stageCard { height: 74vh; min-height: 460px; }
   .carStage { padding: 14px; }
+  .aboutContent {
+    padding: 24px 18px 30px;
+    font-size: 17px;
+    line-height: 1.75;
+  }
+
+  .aboutInner {
+    gap: 20px;
+  }
 
   
   .wideAction { height: 64px; font-size: 16px; }
@@ -2889,6 +2982,28 @@ body.theme-mono .customizeBg {
   filter: grayscale(1);
 }
 
+body.theme-mono .customizePage {
+  background: linear-gradient(180deg, rgba(18, 18, 18, 0.98), rgba(8, 8, 8, 1)) !important;
+}
+
+body.theme-mono .customizeBg {
+  filter: none !important;
+  background:
+    radial-gradient(900px 600px at 50% 42%, rgba(255, 255, 255, 0.08), rgba(12, 12, 12, 0.96) 70%),
+    radial-gradient(900px 600px at 55% 100%, rgba(90, 90, 90, 0.12), rgba(8, 8, 8, 0.99) 75%),
+    linear-gradient(180deg, rgba(18, 18, 18, 0.98), rgba(8, 8, 8, 1)) !important;
+}
+
+body.theme-mono .customizePage .bgGlow {
+  background: radial-gradient(circle at 55% 55%, rgba(255, 255, 255, 0.08), transparent 55%);
+}
+
+body.theme-mono .customizePage .bgGrid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
+
 /* effective homepage overrides */
 body.theme-mono .home-bg {
   filter: none !important;
@@ -3309,6 +3424,40 @@ body.theme-mono .menuItem {
 
 body.theme-mono .panelCard {
   border: 1px solid rgba(255, 255, 255, 0.22) !important;
+}
+
+body.theme-mono .aboutContent {
+  color: rgba(255, 255, 255, 0.94);
+  scrollbar-color: rgba(255, 255, 255, 0.82) transparent;
+}
+
+body.theme-mono .aboutContent::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.82);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+body.theme-mono .aboutContent::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+body.theme-mono .aboutPageRoot .customizeBg {
+  filter: none !important;
+  background:
+    radial-gradient(900px 600px at 50% 42%, rgba(255, 255, 255, 0.08), rgba(12, 12, 12, 0.96) 70%),
+    radial-gradient(900px 600px at 55% 100%, rgba(90, 90, 90, 0.12), rgba(8, 8, 8, 0.99) 75%),
+    linear-gradient(180deg, rgba(18, 18, 18, 0.98), rgba(8, 8, 8, 1));
+}
+
+body.theme-mono .aboutPageRoot .bgGlow {
+  background: radial-gradient(circle at 55% 55%, rgba(255, 255, 255, 0.08), transparent 55%);
+}
+
+body.theme-mono .aboutPageRoot .bgGrid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
 }
 
 body.theme-mono .accordionItem,

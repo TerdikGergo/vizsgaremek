@@ -552,9 +552,7 @@ if (!data || data.length === 0) {
                 aria-label="Display name"
               />
             </div>
-            <Suspense>
-              <AuthButton></AuthButton>
-            </Suspense>
+            
           </div>
         )}
       </header>

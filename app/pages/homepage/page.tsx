@@ -23,6 +23,7 @@ import {
   setActiveProjectStorage,
   setSavedBuildActiveInDatabase,
 } from "@/lib/garageShared";
+import { AuthButton } from "@/components/auth-button";
 
 type Page =
   | "Home"
@@ -551,23 +552,9 @@ if (!data || data.length === 0) {
                 aria-label="Display name"
               />
             </div>
-            <button
-              className="home-side-menu-row"
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                setIsProfileMenuOpen(false);
-                onLogout?.();
-              }}
-            >
-              Log Out
-            </button>
-            <button className="home-side-menu-row" type="button" role="menuitem">
-              Email Change
-            </button>
-            <button className="home-side-menu-row" type="button" role="menuitem">
-              Password Reset
-            </button>
+            <Suspense>
+              <AuthButton></AuthButton>
+            </Suspense>
           </div>
         )}
       </header>

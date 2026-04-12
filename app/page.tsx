@@ -4,11 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { Suspense } from "react";
 
-export default async function Home() {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getClaims();
-  const user = data?.claims;
-
+export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center">
       <div className="flex-1 w-full flex flex-col gap-20 items-center">
@@ -42,13 +38,9 @@ export default async function Home() {
                   on frontend interaction and visualization, and backend connection can be added afterward.
                 </p>
 
-                {user ? (
-                  <div className="mt-8 flex justify-center">
-                    <Button asChild size="lg">
-                      <Link href="/pages/homepage">Continue</Link>
-                    </Button>
-                  </div>
-                ) : null}
+                <Suspense fallback={null}>
+                  <ContinueButton />
+                </Suspense>
 
               </div>
             </div>
@@ -60,5 +52,23 @@ export default async function Home() {
         </footer>
       </div>
     </main>
+  );
+}
+
+async function ContinueButton() {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims;
+
+  if (!user) {
+    return null;
+  }
+
+  return (
+    <div className="mt-8 flex justify-center">
+      <Button asChild size="lg">
+        <Link href="/pages/homepage">Continue</Link>
+      </Button>
+    </div>
   );
 }

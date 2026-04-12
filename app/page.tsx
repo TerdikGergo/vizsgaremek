@@ -21,7 +21,7 @@ export default async function Home() {
             </Suspense>
           </div>
         </nav>
-        <div className="registration-root">
+         <div className="registration-root">
               <div className="registration-card intro-card">
                 <h1 className="registration-title">Project Intro</h1>
 
@@ -41,16 +41,14 @@ export default async function Home() {
                   You can also store your chosen builds in the Garage page and revisit saved models later. The current version focuses
                   on frontend interaction and visualization, and backend connection can be added afterward.
                 </p>
-                <Suspense>
-                  {user ? (
-                    <div className="mt-8 flex justify-center">
-                      <Button asChild size="lg">
-                        <Link href="/pages/homepage">Continue</Link>
-                      </Button>
-                    </div>
-                  ) : null}  
-                </Suspense>
-                
+
+                {user ? (
+                  <div className="mt-8 flex justify-center">
+                    <Button asChild size="lg">
+                      <Link href="/pages/homepage">Continue</Link>
+                    </Button>
+                  </div>
+                ) : null}
 
               </div>
             </div>
@@ -64,3 +62,4 @@ export default async function Home() {
     </main>
   );
 }
+

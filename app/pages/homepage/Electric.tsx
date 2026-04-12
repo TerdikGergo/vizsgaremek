@@ -20,7 +20,7 @@ import {
 
 
 
-type Props = { onBack: () => void };
+type Props = { onBack: () => void; onSaved: (data: any) => void; };
 
 type EngineKey = "INLINE4";
 type EngineFamily = "INLINE";

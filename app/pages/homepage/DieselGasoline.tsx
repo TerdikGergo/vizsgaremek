@@ -17,7 +17,7 @@ import {
   setSavedBuildActiveInDatabase,
 } from "@/lib/garageShared";
 
-type Props = { onBack: () => void };
+type Props = { onBack: () => void; onSaved: (data: any) => void; };
 
 type EngineKey = "V6" | "V8" | "V12" | "Inline" | "Boxer";
 type EngineFamily = "V" | "INLINE" | "BOXER";

@@ -3,13 +3,25 @@
 import Engine from "./Engine";
 import DieselGasoline from "./DieselGasoline";
 import Electric from "./Electric";
-import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, Html, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 
 import Garage from "./Garage";
 import Customize from "./Customize";
+import { createClient } from "@/lib/supabase/client";
+import {
+  ACTIVE_MODEL_URL_KEY,
+  CUSTOMIZE_MODEL_URL_KEY,
+  DEFAULT_MODEL_URL,
+  DEFAULT_PROJECT_ID,
+  EDITING_BUILD_ID_KEY,
+  clearEditingProjectStorage,
+  normalizeModelUrl,
+  setActiveProjectStorage,
+  setSavedBuildActiveInDatabase,
+} from "@/lib/garageShared";
 
 type Page =
   | "Home"
@@ -30,10 +42,9 @@ type BorderSpark = {
   duration: number;
 };
 
-const STORAGE_KEY = "selectedCarModelUrl";
 const THEME_KEY = "site-theme";
 const DISPLAY_NAME_KEY = "profile-display-name";
-const DEFAULT_CAR_URL = "/models/Dodge_MidnightBlack_LB_WB_SC_HB.glb";
+const DEFAULT_CAR_URL = DEFAULT_MODEL_URL;
 
 type CarModelProps = { url: string };
 
@@ -219,6 +230,7 @@ function Scene({ carUrl, theme }: { carUrl: string; theme: Theme }) {
 }
 
 export default function HomePage({ onLogout }: { onLogout?: () => void }) {
+  const supabase = useMemo(() => createClient(), []);
   const [active, setActive] = useState<Page>("Home");
   const [carUrl, setCarUrl] = useState<string>(DEFAULT_CAR_URL);
   const [theme, setTheme] = useState<Theme>("blue");
@@ -231,6 +243,51 @@ export default function HomePage({ onLogout }: { onLogout?: () => void }) {
   const isAboutUsActive = active === "About Us";
   const profileButtonRef = useRef<HTMLButtonElement>(null);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  const syncHomeCarFromStorage = useCallback(() => {
+    if (typeof window === "undefined") return false;
+
+    const storedActiveUrl = localStorage.getItem(ACTIVE_MODEL_URL_KEY);
+    if (!storedActiveUrl) return false;
+
+    setCarUrl(normalizeModelUrl(storedActiveUrl));
+    return true;
+  }, []);
+
+  const goToNewCustomize = useCallback(() => {
+    if (typeof window !== "undefined") {
+      clearEditingProjectStorage();
+      const nextDraftUrl = normalizeModelUrl(
+        localStorage.getItem(ACTIVE_MODEL_URL_KEY) ?? carUrl ?? DEFAULT_CAR_URL,
+      );
+      localStorage.setItem(CUSTOMIZE_MODEL_URL_KEY, nextDraftUrl);
+    }
+
+    setActive("Customize");
+  }, [carUrl]);
+
+  const handleGarageBack = useCallback(() => {
+    syncHomeCarFromStorage();
+    setActive("Home");
+  }, [syncHomeCarFromStorage]);
+
+  const handleProjectActivated = useCallback((modelUrl: string) => {
+    setCarUrl(normalizeModelUrl(modelUrl));
+  }, []);
+
+  const handleProjectSaved = useCallback(() => {
+    syncHomeCarFromStorage();
+    setActive("Garage");
+  }, [syncHomeCarFromStorage]);
+
+  const handleCustomizeBack = useCallback(() => {
+    if (typeof window !== "undefined" && localStorage.getItem(EDITING_BUILD_ID_KEY)) {
+      setActive("Garage");
+      return;
+    }
+
+    setActive("Home");
+  }, []);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem(THEME_KEY);
@@ -253,19 +310,82 @@ export default function HomePage({ onLogout }: { onLogout?: () => void }) {
   }, [theme]);
 
   useEffect(() => {
-    const fromStorage = localStorage.getItem(STORAGE_KEY);
-    if (!fromStorage || fromStorage.trim().length === 0) return;
+    let ignore = false;
 
-    fetch(fromStorage)
-      .then((r) => {
-        if (!r.ok) throw new Error("missing model");
-        setCarUrl(fromStorage);
-      })
-      .catch(() => {
-        localStorage.removeItem(STORAGE_KEY);
-        setCarUrl(DEFAULT_CAR_URL);
-      });
-  }, []);
+    syncHomeCarFromStorage();
+
+    (async () => {
+      try {
+        const { data: authData } = await supabase.auth.getUser();
+        const user = authData.user;
+
+        if (!user) {
+          if (!ignore) {
+            setActiveProjectStorage(DEFAULT_PROJECT_ID, DEFAULT_CAR_URL);
+            setCarUrl(DEFAULT_CAR_URL);
+          }
+          return;
+        }
+
+        let { data, error } = await supabase
+  .from("saved_car_builds")
+  .select("id, model_url, is_active")
+  .eq("user_id", user.id)
+  .eq("is_active", true)
+  .limit(1);
+
+if (error) throw error;
+
+if (!data || data.length === 0) {
+  const fallback = await supabase
+    .from("saved_car_builds")
+    .select("id, model_url, is_active")
+    .eq("user_id", user.id)
+    .order("name", { ascending: true })
+    .limit(1);
+
+  if (fallback.error) throw fallback.error;
+  data = fallback.data;
+}
+
+        if (error) throw error;
+        if (ignore) return;
+
+        const firstSavedBuild = data?.[0] as
+          | { id: string; model_url: string; is_active: boolean }
+          | undefined;
+
+        if (firstSavedBuild) {
+          if (!firstSavedBuild.is_active) {
+            await setSavedBuildActiveInDatabase(supabase, user.id, firstSavedBuild.id);
+            if (ignore) return;
+          }
+
+          const browserModelUrl = normalizeModelUrl(firstSavedBuild.model_url);
+          setActiveProjectStorage(firstSavedBuild.id, browserModelUrl);
+          setCarUrl(browserModelUrl);
+        } else {
+          setActiveProjectStorage(DEFAULT_PROJECT_ID, DEFAULT_CAR_URL);
+          setCarUrl(DEFAULT_CAR_URL);
+        }
+      } catch {
+        if (!ignore) {
+          setActiveProjectStorage(DEFAULT_PROJECT_ID, DEFAULT_CAR_URL);
+          setCarUrl(DEFAULT_CAR_URL);
+        }
+      }
+    })();
+
+    return () => {
+      ignore = true;
+    };
+  }, [supabase, syncHomeCarFromStorage]);
+
+  useEffect(() => {
+    if (active === "Home") {
+      syncHomeCarFromStorage();
+    }
+  }, [active, syncHomeCarFromStorage]);
 
   useEffect(() => {
     if (theme !== "mono") {
@@ -310,21 +430,6 @@ export default function HomePage({ onLogout }: { onLogout?: () => void }) {
   }, [theme]);
 
   useEffect(() => {
-  const savedTheme = localStorage.getItem("site-theme");
-  const nextTheme: Theme = savedTheme === "mono" ? "mono" : "blue";
-
-  setTheme(nextTheme);
-  document.body.classList.remove("theme-blue", "theme-mono");
-  document.body.classList.add(`theme-${nextTheme}`);
-}, []);
-
-useEffect(() => {
-  document.body.classList.remove("theme-blue", "theme-mono");
-  document.body.classList.add(`theme-${theme}`);
-  localStorage.setItem("site-theme", theme);
-}, [theme]);
-
-  useEffect(() => {
     localStorage.setItem(DISPLAY_NAME_KEY, displayName);
   }, [displayName]);
 
@@ -345,18 +450,31 @@ useEffect(() => {
     return () => window.removeEventListener("mousedown", onMouseDown);
   }, [isProfileMenuOpen]);
 
-  if (active === "Garage") return <Garage onBack={() => setActive("Home")} />;
+  if (active === "Garage") {
+    return (
+      <Garage
+        onBack={handleGarageBack}
+        onCustomizeProject={() => setActive("Customize")}
+        onProjectActivated={handleProjectActivated}
+      />
+    );
+  }
 
   if (active === "Customize") {
-    return <Customize onBack={() => setActive("Home")} onGoEngine={() => setActive("Engine")} />;
+    return <Customize onBack={handleCustomizeBack} onGoEngine={() => setActive("Engine")} />;
   }
 
   if (active === "Engine") {
     return <Engine onBack={() => setActive("Customize")} onFuel={() => setActive("DieselGasoline")} onElectric={() => setActive("Electric")} />;
   }
 
-  if (active === "DieselGasoline") return <DieselGasoline onBack={() => setActive("Engine")} />;
-  if (active === "Electric") return <Electric onBack={() => setActive("Engine")} />;
+  if (active === "DieselGasoline") {
+    return <DieselGasoline onBack={() => setActive("Engine")} onSaved={handleProjectSaved} />;
+  }
+
+  if (active === "Electric") {
+    return <Electric onBack={() => setActive("Engine")} onSaved={handleProjectSaved} />;
+  }
 
   return (
     <div className="home-root homePageRoot">
@@ -369,7 +487,7 @@ useEffect(() => {
               <span className="nav-label">Home</span>
             </button>
 
-            <button className={`nav-item ${isCustomizeActive ? "active" : ""}`} onClick={() => setActive("Customize")} type="button">
+            <button className={`nav-item ${isCustomizeActive ? "active" : ""}`} onClick={goToNewCustomize} type="button">
               <span className="nav-label">Customize</span>
             </button>
 

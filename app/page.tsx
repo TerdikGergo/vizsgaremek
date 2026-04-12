@@ -1,7 +1,14 @@
 import { AuthButton } from "@/components/auth-button";
+import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
 import { Suspense } from "react";
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims;
+
   return (
     <main className="min-h-screen flex flex-col items-center">
       <div className="flex-1 w-full flex flex-col gap-20 items-center">
@@ -34,6 +41,14 @@ export default function Home() {
                   You can also store your chosen builds in the Garage page and revisit saved models later. The current version focuses
                   on frontend interaction and visualization, and backend connection can be added afterward.
                 </p>
+
+                {user ? (
+                  <div className="mt-8 flex justify-center">
+                    <Button asChild size="lg">
+                      <Link href="/pages/homepage">Continue</Link>
+                    </Button>
+                  </div>
+                ) : null}
 
               </div>
             </div>

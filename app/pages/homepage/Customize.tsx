@@ -6,11 +6,10 @@ import React, { Suspense, useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
 import { Canvas, useThree } from "@react-three/fiber";
 import { Environment, Html, useGLTF } from "@react-three/drei";
+import { CUSTOMIZE_MODEL_URL_KEY, FULL_CAR_NAMES, normalizeModelUrl, type CarId } from "@/lib/garageShared";
 
 type SectionKey = "color" | "lights" | "windows" | "spoiler" | "hood";
 type BinaryChoice = "A" | "B";
-type CarId = "Lambo" | "Dodge" | "Merci";
-
 const COLOR_OPTIONS = [
   { label: "Arctic Blue", value: "ArticBlue" },
   { label: "Midnight Black", value: "MidnightBlack" },
@@ -34,12 +33,12 @@ const BINARY_OPTIONS = [
   { label: "Option B", value: "B" as const },
 ];
 
-const STORAGE_KEY = "selectedCarModelUrl";
+const STORAGE_KEY = CUSTOMIZE_MODEL_URL_KEY;
 
 const CAR_OPTIONS = [
-  { id: "Lambo" as const, label: "Lambo" },
-  { id: "Dodge" as const, label: "Dodge" },
-  { id: "Merci" as const, label: "Merci" },
+  { id: "Lambo" as const, label: FULL_CAR_NAMES.Lambo },
+  { id: "Merci" as const, label: FULL_CAR_NAMES.Merci },
+  { id: "Dodge" as const, label: FULL_CAR_NAMES.Dodge },
 ] as const;
 
 const DEFAULT_CAR = CAR_OPTIONS[0];
@@ -85,12 +84,12 @@ function buildModelFileName(carId: CarId, selected: SelectedOptions) {
 }
 
 function buildModelUrl(carId: CarId, selected: SelectedOptions) {
-  return `/Models/${buildModelFileName(carId, selected)}`;
+  return `/models/${buildModelFileName(carId, selected)}`;
 }
 
 function parseSavedModelUrl(url: string): { carId: CarId; selected: SelectedOptions } | null {
   try {
-    const cleanUrl = url.split("?")[0];
+    const cleanUrl = normalizeModelUrl(url);
     const fileName = cleanUrl.split("/").pop();
     if (!fileName) return null;
 
@@ -185,6 +184,7 @@ export default function Customize({
   const [selected, setSelected] = useState<SelectedOptions>(DEFAULT_SELECTION);
   const [selectOpen, setSelectOpen] = useState(false);
   const [selectedCarId, setSelectedCarId] = useState<CarId>(DEFAULT_CAR.id);
+  const [didRestoreSavedModel, setDidRestoreSavedModel] = useState(false);
 
   const selectedCar = useMemo(
     () => CAR_OPTIONS.find((c) => c.id === selectedCarId) ?? DEFAULT_CAR,
@@ -246,23 +246,30 @@ export default function Customize({
   }, []);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (!saved) return;
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
 
+    if (saved) {
       const parsed = parseSavedModelUrl(saved);
-      if (!parsed) return;
 
-      setSelectedCarId(parsed.carId);
-      setSelected(parsed.selected);
-    } catch {}
-  }, []);
+      if (parsed) {
+        setSelectedCarId(parsed.carId);
+        setSelected(parsed.selected);
+      }
+    }
+  } catch {
+  } finally {
+    setDidRestoreSavedModel(true);
+  }
+}, []);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, selectedModelUrl);
-    } catch {}
-  }, [selectedModelUrl]);
+  if (!didRestoreSavedModel) return;
+
+  try {
+    localStorage.setItem(STORAGE_KEY, normalizeModelUrl(selectedModelUrl));
+  } catch {}
+}, [didRestoreSavedModel, selectedModelUrl]);
 
   useEffect(() => {
     useGLTF.preload(selectedCarLoadUrl);
@@ -543,7 +550,7 @@ function Scene({
             <br />
             <b>{fileName}</b>
             <br />
-            Check the file name in <b>public/Models</b>
+            Check the file name in <b>public/models</b>
           </Html>
         }
       >

@@ -1,167 +1,240 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import {
+  CUSTOMIZE_MODEL_URL_KEY,
+  EDITING_BUILD_ID_KEY,
+  buildDefaultProject,
+  clearEditingProjectStorage,
+  getCarFullNameFromModelUrl,
+  getModelFileName,
+  getPreferredSavedBuild,
+  normalizeModelUrl,
+  setActiveProjectStorage,
+  setSavedBuildActiveInDatabase,
+  type GarageProject,
+  type SavedCarBuildRow,
+} from "@/lib/garageShared";
 
 type GarageProps = {
   onBack: () => void;
+  onCustomizeProject: () => void;
+  onProjectActivated: (modelUrl: string) => void;
 };
 
-type StoredModel = {
-  id: string;
-  name: string;
-  url: string;
-};
+export default function Garage({
+  onBack,
+  onCustomizeProject,
+  onProjectActivated,
+}: GarageProps) {
+  const supabase = useMemo(() => createClient(), []);
+  const defaultProject = useMemo(() => buildDefaultProject(), []);
 
-const LS_SELECTED_URL = "selectedCarModelUrl";
-const LS_MODELS = "garageModels";
-
-function safeParseModels(raw: string | null): StoredModel[] | null {
-  if (!raw) return null;
-  try {
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return null;
-
-    const ok = parsed.every(
-      (x) =>
-        x &&
-        typeof x.id === "string" &&
-        typeof x.name === "string" &&
-        typeof x.url === "string"
-    );
-
-    return ok ? (parsed as StoredModel[]) : null;
-  } catch {
-    return null;
-  }
-}
-
-function PencilIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 20h9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <path
-        d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4 11.5-11.5Z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-export default function Garage({ onBack }: GarageProps) {
-  
-  const seedModels: StoredModel[] = useMemo(
-    () => [
-      { id: "m1", name: "default_car.glb", url: "/models/default_car.glb?slot=1" },
-      { id: "m2", name: "default_car_v2.glb", url: "/models/default_car.glb?slot=2" },
-      { id: "m3", name: "default_car_v3.glb", url: "/models/default_car.glb?slot=3" },
-    ],
-    []
-  );
-
-  const [models, setModels] = useState<StoredModel[]>(seedModels);
+  const [projects, setProjects] = useState<GarageProject[]>([defaultProject]);
   const [query, setQuery] = useState("");
-  const [selectedUrl, setSelectedUrl] = useState<string>(seedModels[0].url);
+  const [selectedProjectId, setSelectedProjectId] = useState<string>(defaultProject.id);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editValue, setEditValue] = useState("");
-  const editInputRef = useRef<HTMLInputElement | null>(null);
+  const loadProjects = useCallback(async () => {
+    try {
+      const { data: authData } = await supabase.auth.getUser();
+      const user = authData.user;
 
-  
-  useEffect(() => {
-    const storedModels = safeParseModels(localStorage.getItem(LS_MODELS));
-    const storedSelected = localStorage.getItem(LS_SELECTED_URL);
+      let rows: SavedCarBuildRow[] = [];
+      if (user) {
+        const { data, error } = await supabase
+          .from("saved_car_builds")
+          .select(
+  "id, name, model_url, engine_type, engine, materials_egy, materials_ketto, materials_harom, materials_negy, materials_ot, materials_hat, is_active",
+)
+          .eq("user_id", user.id)
+          .order("is_active", { ascending: false })
+          .order("name", { ascending: true });
 
-    if (storedModels && storedModels.length > 0) {
-      setModels(storedModels);
-
-      if (storedSelected && storedModels.some((m) => m.url === storedSelected)) {
-        setSelectedUrl(storedSelected);
-      } else {
-        
-        setSelectedUrl(storedModels[0].url);
-        localStorage.setItem(LS_SELECTED_URL, storedModels[0].url);
+        if (error) throw error;
+        rows = (data ?? []) as SavedCarBuildRow[];
       }
-    } else {
-      
-      setModels(seedModels);
-      localStorage.setItem(LS_MODELS, JSON.stringify(seedModels));
 
-      
-      const initial = storedSelected && seedModels.some((m) => m.url === storedSelected)
-        ? storedSelected
-        : seedModels[0].url;
+      const preferredSavedRow = getPreferredSavedBuild(rows);
 
-      setSelectedUrl(initial);
-      localStorage.setItem(LS_SELECTED_URL, initial);
+      if (user && preferredSavedRow && !preferredSavedRow.is_active) {
+        await setSavedBuildActiveInDatabase(supabase, user.id, preferredSavedRow.id);
+        preferredSavedRow.is_active = true;
+      }
+
+      const nextProjects: GarageProject[] = [
+        defaultProject,
+        ...rows.map((row) => ({
+  id: row.id,
+  name: row.name,
+  modelUrl: normalizeModelUrl(row.model_url),
+  engineType: row.engine_type,
+  engine: row.engine,
+  isDefault: false,
+  isActive: !!row.is_active,
+})),
+      ];
+
+      const nextSelected =
+        (preferredSavedRow
+          ? nextProjects.find((project) => project.id === preferredSavedRow.id)
+          : undefined) ?? defaultProject;
+
+      setProjects(nextProjects);
+      setSelectedProjectId(nextSelected.id);
+      setActiveProjectStorage(nextSelected.id, nextSelected.modelUrl);
+      onProjectActivated(nextSelected.modelUrl);
+      setErrorMessage(null);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to load saved projects.";
+
+      setProjects([defaultProject]);
+      setSelectedProjectId(defaultProject.id);
+      setActiveProjectStorage(defaultProject.id, defaultProject.modelUrl);
+      onProjectActivated(defaultProject.modelUrl);
+      setErrorMessage(message);
     }
-  }, [seedModels]);
+  }, [defaultProject, onProjectActivated, supabase]);
 
-  
   useEffect(() => {
-    localStorage.setItem(LS_MODELS, JSON.stringify(models));
-  }, [models]);
-
-  
-  useEffect(() => {
-    if (editingId) requestAnimationFrame(() => editInputRef.current?.focus());
-  }, [editingId]);
+    void loadProjects();
+  }, [loadProjects]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return models;
-    return models.filter((m) => m.name.toLowerCase().includes(q));
-  }, [models, query]);
+    if (!q) return projects;
 
-  const selectedModel = useMemo(() => {
-    return models.find((m) => m.url === selectedUrl) ?? models[0];
-  }, [models, selectedUrl]);
+    return projects.filter((project) => {
+      const fileName = getModelFileName(project.modelUrl).toLowerCase();
+      const carName = getCarFullNameFromModelUrl(project.modelUrl).toLowerCase();
+      return (
+        project.name.toLowerCase().includes(q) ||
+        fileName.includes(q) ||
+        carName.includes(q)
+      );
+    });
+  }, [projects, query]);
 
-  function selectModel(url: string) {
-    setSelectedUrl(url);
-    localStorage.setItem(LS_SELECTED_URL, url);
+  const hasSavedProjects = useMemo(
+    () => projects.some((project) => !project.isDefault),
+    [projects],
+  );
+
+  async function selectProject(project: GarageProject) {
+    if (project.isDefault && hasSavedProjects) {
+      return;
+    }
+
+    setSelectedProjectId(project.id);
+
+    if (project.isDefault) {
+      setActiveProjectStorage(project.id, project.modelUrl);
+      onProjectActivated(project.modelUrl);
+      return;
+    }
+
+    setProjects((prev) =>
+      prev.map((item) =>
+        item.isDefault ? item : { ...item, isActive: item.id === project.id },
+      ),
+    );
+    setActiveProjectStorage(project.id, project.modelUrl);
+    onProjectActivated(project.modelUrl);
+
+    try {
+      const { data: authData } = await supabase.auth.getUser();
+      const user = authData.user;
+
+      if (!user) {
+        throw new Error("User session not found.");
+      }
+
+      await setSavedBuildActiveInDatabase(supabase, user.id, project.id);
+      setErrorMessage(null);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to activate this project.";
+      window.alert(message);
+      await loadProjects();
+    }
   }
 
-  function startRename(m: StoredModel) {
-    setEditingId(m.id);
-    setEditValue(m.name);
+  async function deleteProject(project: GarageProject) {
+    if (project.isDefault) return;
+
+    const shouldDelete = window.confirm(
+      `Delete the project \"${project.name}\"?`,
+    );
+    if (!shouldDelete) return;
+
+    try {
+      const { data: authData } = await supabase.auth.getUser();
+      const user = authData.user;
+
+      if (!user) {
+        throw new Error("User session not found.");
+      }
+
+      const { error } = await supabase
+        .from("saved_car_builds")
+        .delete()
+        .eq("id", project.id)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      if (
+        typeof window !== "undefined" &&
+        localStorage.getItem(EDITING_BUILD_ID_KEY) === project.id
+      ) {
+        clearEditingProjectStorage();
+      }
+
+      await loadProjects();
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to delete this project.";
+      window.alert(message);
+    }
   }
 
-  function commitRename(id: string) {
-    const nextName = editValue.trim();
-    setEditingId(null);
+  function customizeProject(project: GarageProject) {
+    if (typeof window !== "undefined") {
+      if (project.isDefault) {
+        clearEditingProjectStorage();
+      } else {
+        localStorage.setItem(EDITING_BUILD_ID_KEY, project.id);
+      }
 
-    if (!nextName) return;
+      localStorage.setItem(
+        CUSTOMIZE_MODEL_URL_KEY,
+        normalizeModelUrl(project.modelUrl),
+      );
+    }
 
-    setModels((prev) => prev.map((m) => (m.id === id ? { ...m, name: nextName } : m)));
-  }
-
-  function cancelRename() {
-    setEditingId(null);
-    setEditValue("");
+    onCustomizeProject();
   }
 
   return (
-    <div className="home-root">
+    <div className="home-root garagePageRoot">
       <div className="home-bg" />
 
-      {}
       <button
-        className="app-backBtn"
+        className="app-backBtn garage-backBtn"
         type="button"
         aria-label="Back"
+        title="Back"
         onClick={onBack}
       >
-        <span className="app-backIcon" aria-hidden="true" />
+        <span className="garage-backIcon" aria-hidden="true" />
       </button>
 
-      {}
       <div className="garage-titlePill" aria-label="Current tab: Garage">
         <span className="garage-titlePillText">Garage</span>
       </div>
 
-      {}
       <div className="garage-searchWrap">
         <span className="garage-searchIcon" aria-hidden="true" />
         <input
@@ -172,81 +245,95 @@ export default function Garage({ onBack }: GarageProps) {
         />
       </div>
 
-      {}
       <div className="garage-content">
-        {}
-        <div className="garage-left">
-          <div className="garage-carCard">
-            <div className="garage-carCardHeader">{selectedModel?.name ?? "—"}</div>
-
-            <div className="garage-carPreview">
-              <div className="garage-previewInner">
-                <div className="garage-previewLabel">Selected model</div>
-                <div className="garage-previewFile">{selectedModel?.name ?? "—"}</div>
-                <div className="garage-previewHint">
-                  Teszt preview — később ide jöhet GLB viewer
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {}
         <div className="garage-right">
           <div className="garage-row">
-            {filtered.map((m) => {
-              const isSelected = m.url === selectedUrl;
-              const isEditing = editingId === m.id;
+            {filtered.map((project) => {
+              const isSelected = project.id === selectedProjectId;
 
               return (
                 <div
-                  key={m.id}
+                  key={project.id}
                   className={`garage-saveCard ${isSelected ? "isSelected" : ""}`}
                   role="button"
                   tabIndex={0}
-                  onClick={() => selectModel(m.url)} 
+                  onClick={() => {
+                    void selectProject(project);
+                  }}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") selectModel(m.url);
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      void selectProject(project);
+                    }
                   }}
                 >
-                  {}
-                  <button
-                    className="garage-pencil"
-                    type="button"
-                    aria-label="Rename model"
-                    onClick={(e) => {
-                      e.stopPropagation(); 
-                      startRename(m);
-                    }}
-                  >
-                    <PencilIcon />
-                  </button>
-
-                  {}
-                  <div className="garage-saveHeader">
-                    {isEditing ? (
-                      <input
-                        ref={editInputRef}
-                        className="garage-nameInput"
-                        value={editValue}
-                        onChange={(e) => setEditValue(e.target.value)}
-                        onClick={(e) => e.stopPropagation()}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") commitRename(m.id);
-                          if (e.key === "Escape") cancelRename();
+                  <div className="garage-saveActions">
+                    {!project.isDefault && (
+                      <button
+                        className="garage-cardAction garage-cardActionDelete"
+                        type="button"
+                        aria-label={`Delete ${project.name}`}
+                        title="Delete"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void deleteProject(project);
                         }}
-                        onBlur={() => commitRename(m.id)}
-                      />
-                    ) : (
-                      <span className="garage-saveTitle" title={m.name}>
-                        {m.name}
-                      </span>
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                          className="garage-cardActionIcon"
+                        >
+                          <path
+                            d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-2 6h2v8H7V9Zm4 0h2v8h-2V9Zm4 0h2v8h-2V9ZM6 7h12l-1 13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 7Z"
+                            fill="currentColor"
+                          />
+                        </svg>
+                      </button>
                     )}
+
+                    <button
+                      className="garage-cardAction garage-cardActionCustomize"
+                      type="button"
+                      aria-label={`Customize ${project.name}`}
+                      title="Customize"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        customizeProject(project);
+                      }}
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                        className="garage-cardActionIcon"
+                      >
+                        <path
+                          d="m15.6 4.2 4.2 4.2-9.9 9.9-4.8.6.6-4.8 9.9-9.9Zm1.4-1.4a2 2 0 0 1 2.8 0l1.4 1.4a2 2 0 0 1 0 2.8l-1 1-4.2-4.2 1-1Z"
+                          fill="currentColor"
+                        />
+                      </svg>
+                    </button>
                   </div>
 
-                  {}
+                  <div className="garage-saveHeader">
+                    <span className="garage-saveTitle" title={project.name}>
+                      {project.name}
+                    </span>
+                  </div>
+
                   <div className="garage-saveBody">
-                    <div className="garage-saveBodyText">Image about the chosen car</div>
+                    <div className="garage-saveInfo">
+                      <div className="garage-saveBodyText">
+                        {getCarFullNameFromModelUrl(project.modelUrl)}
+                      </div>
+                      <div className="garage-saveMeta">
+                        {project.isDefault
+                          ? "Used when you have no saved projects"
+                          : project.engineType === "Electric"
+                            ? "Hybrid"
+                            : project.engineType ?? "Saved project"}
+                      </div>
+                    </div>
                   </div>
                 </div>
               );

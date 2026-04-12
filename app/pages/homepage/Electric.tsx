@@ -1,14 +1,27 @@
 "use client";
 
 import React, { Suspense, useMemo, useRef, useState, useEffect } from "react";
-import "../../globals.css";
+
 
 import { Canvas } from "@react-three/fiber";
 import { Center, Environment, Html, OrbitControls, useGLTF } from "@react-three/drei";
+import { createClient } from "@/lib/supabase/client";
+import {
+  CUSTOMIZE_MODEL_URL_KEY,
+  DEFAULT_MODEL_URL,
+  EDITING_BUILD_ID_KEY,
+  clearEditingProjectStorage,
+  normalizeModelUrl,
+  optionIdToStoredIndex,
+  resolveStoredModelUrl,
+  setActiveProjectStorage,
+  setSavedBuildActiveInDatabase,
+  storedValueToOptionId,
+  type SavedCarBuildRow,
+} from "@/lib/garageShared";
 
 
-
-type Props = { onBack: () => void };
+type Props = { onBack: () => void; onSaved: () => void };
 
 type EngineKey = "INLINE4";
 type EngineFamily = "INLINE";
@@ -454,6 +467,52 @@ function defaultSelectionsFor(): Record<PartKey, string> {
   };
 }
 
+function motorCountToStoredValue(motorCount: 1 | 2 | 3 | 4): string {
+  return String(motorCount - 1);
+}
+
+function storedValueToMotorCount(storedValue: string | null | undefined): 1 | 2 | 3 | 4 | null {
+  if (!storedValue) return null;
+
+  const parsedValue = Number.parseInt(String(storedValue).trim(), 10);
+  if (Number.isNaN(parsedValue)) return null;
+
+  if (parsedValue >= 0 && parsedValue <= 3) {
+    return (parsedValue + 1) as 1 | 2 | 3 | 4;
+  }
+
+  if (parsedValue >= 1 && parsedValue <= 4) {
+    return parsedValue as 1 | 2 | 3 | 4;
+  }
+
+  return null;
+}
+
+function buildSelectionsFromSavedBuild(
+  ui: { fixed: PartUI[]; bottom: PartUI[] },
+  build: SavedCarBuildRow,
+): Record<PartKey, string> {
+  const savedValues = [
+    build.materials_egy,
+    build.materials_ketto,
+    build.materials_harom,
+    build.materials_negy,
+    build.materials_ot,
+    build.materials_hat,
+  ];
+
+  const nextSelections = { ...defaultSelectionsFor() };
+
+  [...ui.fixed, ...ui.bottom].forEach((part, index) => {
+    nextSelections[part.key] = storedValueToOptionId(
+      part.options,
+      savedValues[index],
+      nextSelections[part.key],
+    );
+  });
+
+  return nextSelections;
+}
 
 
 function simulateSeries(
@@ -746,7 +805,8 @@ function SvgChart({ fn, series, animateKey }: { fn: FnKey; series: SeriesPoint[]
 
 
 
-export default function Electric({ onBack }: Props) {
+export default function Electric({ onBack, onSaved }: Props) {
+  const supabase = useMemo(() => createClient(), []);
   const [db, setDb] = useState<DbJson | null>(null);
   const themeMode = useBodyThemeMode();
   const [dbErr, setDbErr] = useState<string | null>(null);
@@ -754,6 +814,9 @@ export default function Electric({ onBack }: Props) {
   const [motorCount, setMotorCount] = useState<1 | 2 | 3 | 4>(1);
   const [materialsOpen, setMaterialsOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [existingBuild, setExistingBuild] = useState<SavedCarBuildRow | null>(null);
+  const [hasAppliedExistingBuild, setHasAppliedExistingBuild] = useState(true);
+  const [saveBusy, setSaveBusy] = useState(false);
 
   const [chartFn, setChartFn] = useState<FnKey[]>([
     FUNCTION_ITEMS[0],
@@ -782,12 +845,78 @@ export default function Electric({ onBack }: Props) {
     })();
   }, []);
 
+  React.useEffect(() => {
+    let ignore = false;
+
+    const editingBuildId =
+      typeof window === "undefined"
+        ? null
+        : localStorage.getItem(EDITING_BUILD_ID_KEY);
+
+    if (!editingBuildId) {
+      setExistingBuild(null);
+      setHasAppliedExistingBuild(true);
+      return;
+    }
+
+    (async () => {
+      try {
+        const { data: authData } = await supabase.auth.getUser();
+        const user = authData.user;
+
+        let query = supabase
+          .from("saved_car_builds")
+          .select(
+            "id, user_id, name, model_url, engine_type, engine, materials_egy, materials_ketto, materials_harom, materials_negy, materials_ot, materials_hat, is_active",
+          )
+          .eq("id", editingBuildId);
+
+        if (user) {
+          query = query.eq("user_id", user.id);
+        }
+
+        const { data, error } = await query.single();
+        if (error) throw error;
+        if (ignore) return;
+
+        const build = data as SavedCarBuildRow;
+        setExistingBuild(build);
+        setHasAppliedExistingBuild(false);
+
+        if (build.engine_type === "Electric") {
+          const storedMotorCount = storedValueToMotorCount(build.engine);
+          if (storedMotorCount) {
+            setMotorCount(storedMotorCount);
+          }
+        }
+      } catch {
+        if (!ignore) {
+          setExistingBuild(null);
+          setHasAppliedExistingBuild(true);
+        }
+      }
+    })();
+
+    return () => {
+      ignore = true;
+    };
+  }, [supabase]);
+
   const isLoading = !db && !dbErr;
   const hasError = !!dbErr;
 
   const engineSafe = db?.electric?.baseEngine ?? db?.engines?.INLINE4 ?? ELECTRIC_BASE_ENGINE;
   const modelUrlSafe = db?.electric?.model ?? db?.engineModels?.INLINE4 ?? ELECTRIC_MODEL_FALLBACK;
   const { fixed, bottom } = useMemo(() => getPartUI(), []);
+
+  React.useEffect(() => {
+    if (!existingBuild || existingBuild.engine_type !== "Electric" || hasAppliedExistingBuild) {
+      return;
+    }
+
+    setSelections(buildSelectionsFromSavedBuild({ fixed, bottom }, existingBuild));
+    setHasAppliedExistingBuild(true);
+  }, [bottom, existingBuild, fixed, hasAppliedExistingBuild]);
 
   const setChartFnAt = (idx: number, value: FnKey) => {
     setChartFn((prev) => {
@@ -804,14 +933,113 @@ export default function Electric({ onBack }: Props) {
     setAnimateKey((x) => x + 1);
   };
 
-  const onSave = () => {
-    console.log("SAVE payload", {
-      name: "Electric build",
-      engine: "INLINE4",
-      motorCount,
-      selections,
-      charts: chartFn,
-    });
+  const onSave = async () => {
+    if (saveBusy) return;
+
+    const currentDraftUrl =
+      typeof window === "undefined"
+        ? DEFAULT_MODEL_URL
+        : normalizeModelUrl(localStorage.getItem(CUSTOMIZE_MODEL_URL_KEY) ?? DEFAULT_MODEL_URL);
+
+    const enteredName = window.prompt(
+      "Enter the name of your project",
+      existingBuild?.name?.trim() || "My Project",
+    );
+
+    if (enteredName === null) return;
+
+    const trimmedName = enteredName.trim();
+    if (!trimmedName) {
+      window.alert("Please enter a project name.");
+      return;
+    }
+
+    setSaveBusy(true);
+
+    try {
+      const { data: authData } = await supabase.auth.getUser();
+      const user = authData.user;
+
+      if (!user) {
+        throw new Error("User session not found.");
+      }
+
+      const storedModelUrl = await resolveStoredModelUrl(supabase, currentDraftUrl);
+      const orderedParts = [...fixed, ...bottom];
+      const materialValues = orderedParts.map((part) =>
+        optionIdToStoredIndex(part.options, selections[part.key]),
+      );
+
+      while (materialValues.length < 6) {
+        materialValues.push("0");
+      }
+
+      const { error: deactivateError } = await supabase
+  .from("saved_car_builds")
+  .update({ is_active: false })
+  .eq("user_id", user.id);
+
+if (deactivateError) throw deactivateError;
+
+const payload = {
+  user_id: user.id,
+  model_url: storedModelUrl,
+  name: trimmedName,
+  engine_type: "Electric",
+  engine: motorCountToStoredValue(motorCount),
+  materials_egy: materialValues[0],
+  materials_ketto: materialValues[1],
+  materials_harom: materialValues[2],
+  materials_negy: materialValues[3],
+  materials_ot: materialValues[4],
+  materials_hat: materialValues[5],
+  is_active: true,
+};
+
+      const editingBuildId =
+        typeof window === "undefined"
+          ? null
+          : localStorage.getItem(EDITING_BUILD_ID_KEY);
+
+      let savedBuildId = editingBuildId;
+
+      if (editingBuildId) {
+        const { data, error } = await supabase
+          .from("saved_car_builds")
+          .update(payload)
+          .eq("id", editingBuildId)
+          .eq("user_id", user.id)
+          .select("id")
+          .single();
+
+        if (error) throw error;
+        savedBuildId = data.id;
+      } else {
+        const { data, error } = await supabase
+          .from("saved_car_builds")
+          .insert(payload)
+          .select("id")
+          .single();
+
+        if (error) throw error;
+        savedBuildId = data.id;
+      }
+
+      if (!savedBuildId) {
+        throw new Error("Failed to determine saved project id.");
+      }
+
+      await setSavedBuildActiveInDatabase(supabase, user.id, savedBuildId);
+      clearEditingProjectStorage();
+      setActiveProjectStorage(savedBuildId, currentDraftUrl);
+      onSaved();
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to save this project.";
+      window.alert(message);
+    } finally {
+      setSaveBusy(false);
+    }
   };
 
   const fmtValue = (fn: FnKey, value: number) => {
@@ -933,8 +1161,8 @@ const cardValue = (fn: FnKey) => {
                       <button className="fuelBtn fuelBtnPrimary" onClick={onCalculate} type="button" disabled={!db}>
                         Calculate
                       </button>
-                      <button className="fuelBtn" onClick={onSave} type="button">
-                        Save
+                      <button className="fuelBtn" onClick={onSave} type="button" disabled={saveBusy}>
+                        {saveBusy ? "Saving..." : "Save"}
                       </button>
                       <button className="fuelBtn" onClick={() => setMaterialsOpen(false)} type="button">
                         Close

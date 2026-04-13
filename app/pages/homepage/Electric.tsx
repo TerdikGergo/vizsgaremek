@@ -1,7 +1,6 @@
 "use client";
 
 import React, { Suspense, useMemo, useRef, useState, useEffect } from "react";
-import "../../globals.css";
 
 import { Canvas } from "@react-three/fiber";
 import { Center, Environment, Html, OrbitControls, useGLTF } from "@react-three/drei";

@@ -90,7 +90,7 @@ function deepCloneScene(root: THREE.Object3D) {
 
 function CarModel({ url }: CarModelProps) {
   const gltf = useGLTF(url);
-  const scene = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
+  const scene = useMemo(() => deepCloneScene(gltf.scene), [gltf.scene]);
 
   return (
     <group position={[0, -0.55, 0]} scale={0.88} dispose={null}>

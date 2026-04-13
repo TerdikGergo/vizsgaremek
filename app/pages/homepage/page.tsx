@@ -537,7 +537,7 @@ if (!data || data.length === 0) {
           </div>
         </nav>
 
-        isProfileMenuOpen && (
+        {isProfileMenuOpen && (
   <div className="home-side-menu" role="menu" aria-label="Profile menu" ref={profileMenuRef}>
     <div className="home-side-menu-row home-side-menu-row-main" role="presentation">
       {displayName.trim() || "Display Names"}

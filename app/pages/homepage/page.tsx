@@ -23,7 +23,7 @@ import {
   setActiveProjectStorage,
   setSavedBuildActiveInDatabase,
 } from "@/lib/garageShared";
-import { AuthButton } from "@/components/auth-button";
+import { LogoutButton } from "@/components/logout-button";
 
 type Page =
   | "Home"
@@ -556,7 +556,7 @@ if (!data || data.length === 0) {
 
     
     <div className="home-side-menu-row" role="presentation">
-      <AuthButton />
+      <LogoutButton />
     </div>
   </div>
 )}

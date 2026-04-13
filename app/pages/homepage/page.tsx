@@ -537,24 +537,29 @@ if (!data || data.length === 0) {
           </div>
         </nav>
 
-        {isProfileMenuOpen && (
-          <div className="home-side-menu" role="menu" aria-label="Profile menu" ref={profileMenuRef}>
-            <div className="home-side-menu-row home-side-menu-row-main" role="presentation">
-              {displayName.trim() || "Display Names"}
-            </div>
-            <div className="home-side-menu-row home-side-menu-input-row" role="presentation">
-              <input
-                className="home-side-menu-input"
-                type="text"
-                value={displayName}
-                onChange={(event) => setDisplayName(event.target.value)}
-                placeholder="displayname"
-                aria-label="Display name"
-              />
-            </div>
-            
-          </div>
-        )}
+        isProfileMenuOpen && (
+  <div className="home-side-menu" role="menu" aria-label="Profile menu" ref={profileMenuRef}>
+    <div className="home-side-menu-row home-side-menu-row-main" role="presentation">
+      {displayName.trim() || "Display Names"}
+    </div>
+
+    <div className="home-side-menu-row home-side-menu-input-row" role="presentation">
+      <input
+        className="home-side-menu-input"
+        type="text"
+        value={displayName}
+        onChange={(event) => setDisplayName(event.target.value)}
+        placeholder="displayname"
+        aria-label="Display name"
+      />
+    </div>
+
+    
+    <div className="home-side-menu-row" role="presentation">
+      <AuthButton />
+    </div>
+  </div>
+)}
       </header>
 
       <main className="stage">

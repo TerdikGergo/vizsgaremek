@@ -2,6 +2,7 @@
 
 import React, { Suspense, useMemo, useRef, useState, useEffect } from "react";
 
+
 import { Canvas } from "@react-three/fiber";
 import { Center, Environment, Html, OrbitControls, useGLTF } from "@react-three/drei";
 import { createClient } from "@/lib/supabase/client";
@@ -15,9 +16,12 @@ import {
   resolveStoredModelUrl,
   setActiveProjectStorage,
   setSavedBuildActiveInDatabase,
+  storedValueToOptionId,
+  type SavedCarBuildRow,
 } from "@/lib/garageShared";
 
-type Props = { onBack: () => void; onSaved: (data: any) => void; };
+
+type Props = { onBack: () => void; onSaved: () => void };
 
 type EngineKey = "V6" | "V8" | "V12" | "Inline" | "Boxer";
 type EngineFamily = "V" | "INLINE" | "BOXER";
@@ -143,104 +147,9 @@ function omegaFromRpm(rpm: number) {
 }
 
 function torqueCurve(engine: EngineConst, rpm: number) {
-  const idle = engine.rpmIdle;
-  const peak = engine.rpmPeakT;
-  const redline = engine.RPM_redline;
-
-  if (rpm <= peak) {
-    const rise = clamp((rpm - idle) / Math.max(peak - idle, 1), 0, 1);
-    return 0.62 + 0.38 * Math.pow(rise, 0.65);
-  }
-
-  const fall = clamp((rpm - peak) / Math.max(redline - peak, 1), 0, 1);
-  return 1.0 - 0.12 * Math.pow(fall, 1.05);
-}
-
-function torqueForTargetPower(engine: EngineConst, omega: number) {
-  return (engine.P_base_kW * 1000) / Math.max(omega, 1e-6);
-}
-
-function buildCombustionTorque(engine: EngineConst, rpm: number, omega: number, throttle: number) {
-  const baseTorque = engine.T_base_Nm * throttle * torqueCurve(engine, rpm);
-
-  if (rpm <= engine.rpmPeakT) {
-    return baseTorque;
-  }
-
-  const blend = clamp(
-    (rpm - engine.rpmPeakT) / Math.max(engine.RPM_redline - engine.rpmPeakT, 1),
-    0,
-    1,
-  );
-
-  const highRpmTorque = torqueForTargetPower(engine, omega) * throttle;
-
-  return (1 - blend) * baseTorque + blend * highRpmTorque;
-}
-
-function materialStrengthScore(material: MaterialProps) {
-  return (
-    0.4 * (material.sigY / 1_030_000_000) +
-    0.35 * (material.sigE / 675_000_000) +
-    0.25 * (material.sigU / 1_350_000_000)
-  );
-}
-
-function materialThermalScore(material: MaterialProps) {
-  return (
-    0.4 * (material.tMaxC / 1050) +
-    0.25 * (material.k / 160) +
-    0.2 * (material.cp / 900) +
-    0.15 * (material.sigY / 1_030_000_000)
-  );
-}
-
-function averageScore(values: number[]) {
-  if (values.length === 0) return 1;
-  return values.reduce((sum, value) => sum + value, 0) / values.length;
-}
-
-function buildMaterialDriveFactors(mats: MaterialProps[]) {
-  const avg = (pick: (m: MaterialProps) => number, fallback: number) =>
-    mats.length ? mats.reduce((s, m) => s + pick(m), 0) / mats.length : fallback;
-
-  const avgStrength = avg(
-    (m) => (m.sigY / 650_000_000 + m.sigU / 1_000_000_000) / 2,
-    0.9,
-  );
-
-  const avgHardness = avg(
-    (m) => m.H / 1_800_000_000,
-    0.9,
-  );
-
-  const avgThermal = avg(
-    (m) => (m.k / 60 + m.tMaxC / 700) / 2,
-    0.9,
-  );
-
-  const avgDensity = avg(
-    (m) => m.rho / 7850,
-    1,
-  );
-
-  return {
-  responseMul: clamp(
-    1.18 + 0.30 * (avgDensity - 1) - 0.28 * (avgStrength - 0.9) - 0.18 * (avgHardness - 0.9),
-    0.68,
-    1.22,
-  ),
-  usableEff: clamp(
-    0.86 + 0.06 * avgThermal + 0.04 * avgHardness,
-    0.84,
-    0.98,
-  ),
-  utilizationMul: clamp(
-    0.72 + 0.16 * avgThermal + 0.12 * avgStrength,
-    0.72,
-    1.0,
-  ),
-  };
+  const x = (rpm - engine.rpmPeakT) / (engine.RPM_redline - engine.rpmIdle);
+  const a = 1.6;
+  return clamp(1 - a * x * x, 0, 1);
 }
 
 function shouldIncludeZero(fn: FnKey) {
@@ -394,6 +303,8 @@ function useBodyThemeMode() {
   return themeMode;
 }
 
+
+
 function EngineModel({ url, engineKey }: { url: string; engineKey: EngineKey }) {
   const gltf = useGLTF(url);
   const scaleByEngine: Record<EngineKey, number> = {
@@ -447,6 +358,8 @@ function Scene({ url, monoMode, engineKey }: { url: string; monoMode: boolean; e
     </>
   );
 }
+
+
 
 type PartUI = {
   key: PartKey;
@@ -592,6 +505,46 @@ function fuelEngineToStoredValue(engineKey: EngineKey): string {
   return String(FUEL_ENGINE_ORDER.indexOf(engineKey));
 }
 
+function storedValueToFuelEngine(storedValue: string | null | undefined): EngineKey | null {
+  if (!storedValue) return null;
+
+  const trimmed = String(storedValue).trim();
+  if ((FUEL_ENGINE_ORDER as string[]).includes(trimmed)) {
+    return trimmed as EngineKey;
+  }
+
+  const parsedIndex = Number.parseInt(trimmed, 10);
+  if (Number.isNaN(parsedIndex)) return null;
+
+  return FUEL_ENGINE_ORDER[parsedIndex] ?? null;
+}
+
+function buildSelectionsFromSavedBuild(
+  ui: { fixed: PartUI[]; bottom: PartUI[] },
+  build: SavedCarBuildRow,
+  family: EngineFamily,
+): Record<PartKey, string> {
+  const savedValues = [
+    build.materials_egy,
+    build.materials_ketto,
+    build.materials_harom,
+    build.materials_negy,
+    build.materials_ot,
+    build.materials_hat,
+  ];
+
+  const nextSelections = { ...defaultSelectionsFor(family) };
+
+  [...ui.fixed, ...ui.bottom].forEach((part, index) => {
+    nextSelections[part.key] = storedValueToOptionId(
+      part.options,
+      savedValues[index],
+      nextSelections[part.key],
+    );
+  });
+
+  return nextSelections;
+}
 
 
 function simulateSeries(db: DbJson, engine: EngineConst, engineKey: EngineKey, selections: Record<PartKey, string>) {
@@ -845,6 +798,7 @@ const U_rpm = clamp(
   return out;
 }
 
+
 function SvgChart({ fn, series, animateKey }: { fn: FnKey; series: SeriesPoint[] | null; animateKey: number }) {
   const W = 420;
   const H = 248;
@@ -959,7 +913,9 @@ function SvgChart({ fn, series, animateKey }: { fn: FnKey; series: SeriesPoint[]
   );
 }
 
-export default function DieselGasoline({ onBack }: Props) {
+
+
+export default function DieselGasoline({ onBack, onSaved }: Props) {
   const supabase = useMemo(() => createClient(), []);
   const [db, setDb] = useState<DbJson | null>(null);
   const themeMode = useBodyThemeMode();
@@ -968,6 +924,8 @@ export default function DieselGasoline({ onBack }: Props) {
   const [selectedEngine, setSelectedEngine] = useState<EngineKey>("V12");
   const [materialsOpen, setMaterialsOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [existingBuild, setExistingBuild] = useState<SavedCarBuildRow | null>(null);
+  const [hasAppliedExistingBuild, setHasAppliedExistingBuild] = useState(true);
   const [saveBusy, setSaveBusy] = useState(false);
 
   const [chartFn, setChartFn] = useState<FnKey[]>([
@@ -996,7 +954,62 @@ export default function DieselGasoline({ onBack }: Props) {
     })();
   }, []);
 
+  React.useEffect(() => {
+    let ignore = false;
 
+    const editingBuildId =
+      typeof window === "undefined"
+        ? null
+        : localStorage.getItem(EDITING_BUILD_ID_KEY);
+
+    if (!editingBuildId) {
+      setExistingBuild(null);
+      setHasAppliedExistingBuild(true);
+      return;
+    }
+
+    (async () => {
+      try {
+        const { data: authData } = await supabase.auth.getUser();
+        const user = authData.user;
+
+        let query = supabase
+          .from("saved_car_builds")
+          .select(
+            "id, user_id, name, model_url, engine_type, engine, materials_egy, materials_ketto, materials_harom, materials_negy, materials_ot, materials_hat, is_active",
+          )
+          .eq("id", editingBuildId);
+
+        if (user) {
+          query = query.eq("user_id", user.id);
+        }
+
+        const { data, error } = await query.single();
+        if (error) throw error;
+        if (ignore) return;
+
+        const build = data as SavedCarBuildRow;
+        setExistingBuild(build);
+        setHasAppliedExistingBuild(false);
+
+        if (build.engine_type !== "Electric") {
+          const storedEngine = storedValueToFuelEngine(build.engine);
+          if (storedEngine) {
+            setSelectedEngine(storedEngine);
+          }
+        }
+      } catch {
+        if (!ignore) {
+          setExistingBuild(null);
+          setHasAppliedExistingBuild(true);
+        }
+      }
+    })();
+
+    return () => {
+      ignore = true;
+    };
+  }, [supabase]);
 
   const isLoading = !db && !dbErr;
   const hasError = !!dbErr;
@@ -1009,7 +1022,14 @@ export default function DieselGasoline({ onBack }: Props) {
     setSelections(defaultSelectionsFor(familySafe));
   }, [selectedEngine, familySafe]);
 
+  React.useEffect(() => {
+    if (!existingBuild || existingBuild.engine_type === "Electric" || hasAppliedExistingBuild) {
+      return;
+    }
 
+    setSelections(buildSelectionsFromSavedBuild(getPartUI(familySafe), existingBuild, familySafe));
+    setHasAppliedExistingBuild(true);
+  }, [existingBuild, familySafe, hasAppliedExistingBuild]);
 
   const { fixed, bottom } = useMemo(() => getPartUI(familySafe), [familySafe]);
 
@@ -1039,7 +1059,7 @@ export default function DieselGasoline({ onBack }: Props) {
 
     const enteredName = window.prompt(
       "Enter the name of your project",
-      "My Project",
+      existingBuild?.name?.trim() || "My Project",
     );
 
     if (enteredName === null) return;
@@ -1071,26 +1091,26 @@ export default function DieselGasoline({ onBack }: Props) {
       }
 
       const { error: deactivateError } = await supabase
-        .from("saved_car_builds")
-        .update({ is_active: false })
-        .eq("user_id", user.id);
+  .from("saved_car_builds")
+  .update({ is_active: false })
+  .eq("user_id", user.id);
 
-      if (deactivateError) throw deactivateError;
+if (deactivateError) throw deactivateError;
 
-      const payload = {
-        user_id: user.id,
-        model_url: storedModelUrl,
-        name: trimmedName,
-        engine_type: "Diesel/Gasoline",
-        engine: fuelEngineToStoredValue(selectedEngine),
-        materials_egy: materialValues[0],
-        materials_ketto: materialValues[1],
-        materials_harom: materialValues[2],
-        materials_negy: materialValues[3],
-        materials_ot: materialValues[4],
-        materials_hat: materialValues[5],
-        is_active: true,
-      };
+const payload = {
+  user_id: user.id,
+  model_url: storedModelUrl,
+  name: trimmedName,
+  engine_type: "Diesel/Gasoline",
+  engine: fuelEngineToStoredValue(selectedEngine),
+  materials_egy: materialValues[0],
+  materials_ketto: materialValues[1],
+  materials_harom: materialValues[2],
+  materials_negy: materialValues[3],
+  materials_ot: materialValues[4],
+  materials_hat: materialValues[5],
+  is_active: true,
+};
 
       const editingBuildId =
         typeof window === "undefined"
@@ -1128,6 +1148,7 @@ export default function DieselGasoline({ onBack }: Props) {
       await setSavedBuildActiveInDatabase(supabase, user.id, savedBuildId);
       clearEditingProjectStorage();
       setActiveProjectStorage(savedBuildId, currentDraftUrl);
+      onSaved();
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to save this project.";
@@ -1138,26 +1159,28 @@ export default function DieselGasoline({ onBack }: Props) {
   };
 
   const fmtValue = (fn: FnKey, value: number) => {
-    if (fn.includes("RPM")) return `${Math.round(value)}`;
-    if (fn.includes("[kW]")) return `${value.toFixed(0)} kW`;
-    if (fn.includes("[km/h]")) return `${value.toFixed(0)} km/h`;
-    if (fn.includes("[°C]")) return `${value.toFixed(0)} °C`;
-    if (fn.includes("[%]")) return `${value.toFixed(0)}%`;
-    if (fn.includes("U_RPM")) return `${value.toFixed(2)}`;
-    if (fn.includes("ΔT")) return `${value.toFixed(0)} °C`;
-    return `${value.toFixed(2)}`;
-  };
+  if (fn.includes("RPM")) return `${Math.round(value)}`;
+  if (fn.includes("[kW]")) return `${value.toFixed(0)} kW`;
+  if (fn.includes("[km/h]")) return `${value.toFixed(0)} km/h`;
+  if (fn.includes("[°C]")) return `${value.toFixed(0)} °C`;
+  if (fn.includes("[%]")) return `${value.toFixed(0)}%`;
+  if (fn.includes("U_RPM")) return `${value.toFixed(2)}`;
+  if (fn.includes("ΔT")) return `${value.toFixed(0)} °C`;
+  return `${value.toFixed(2)}`;
+};
 
-  const cardValue = (fn: FnKey) => {
-    const s = seriesMap?.[fn];
-    if (!s || s.length === 0) return "-";
-    return fmtValue(fn, s[s.length - 1].y);
-  };
+
+const cardValue = (fn: FnKey) => {
+  const s = seriesMap?.[fn];
+  if (!s || s.length === 0) return "-";
+  return fmtValue(fn, s[s.length - 1].y);
+};
+
 
   return (
     <div className="fuelPageRoot">
       <div className="home-bg" />
-
+ 
       <div className="fuelLayout">
         <section className="fuelLeft">
           <div className="fuelTop">
@@ -1263,8 +1286,8 @@ export default function DieselGasoline({ onBack }: Props) {
                       <button className="fuelBtn fuelBtnPrimary" onClick={onCalculate} type="button" disabled={!db}>
                         Calculate
                       </button>
-                      <button className="fuelBtn" onClick={onSave} type="button">
-                        Save
+                      <button className="fuelBtn" onClick={onSave} type="button" disabled={saveBusy}>
+                        {saveBusy ? "Saving..." : "Save"}
                       </button>
                       <button className="fuelBtn" onClick={() => setMaterialsOpen(false)} type="button">
                         Close

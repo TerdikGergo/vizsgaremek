@@ -594,48 +594,9 @@ function simulateSeries(db: DbJson, engine: EngineConst, engineKey: EngineKey, s
   const TMAX_valves = matByPart.get("VALVES")?.tMaxC ?? 700;
   const TMAX_seal = hasSeal ? (matByPart.get(sealKey)?.tMaxC ?? 550) : 1e9;
 
-  const rotatingParts: PartKey[] = ["PISTON", "ROD", "CRANK", "VALVES"];
-  const extraParts: PartKey[] =
-    family === "V"
-      ? ["V_GIRDLE", "V_TIMING"]
-      : family === "INLINE"
-        ? ["L_DECK", "L_HEADSEAL"]
-        : ["B_HEADSEAL"];
-
-  const strengthScore = averageScore(
-    [...rotatingParts, ...extraParts].map(
-      (part) => materialStrengthScore(matByPart.get(part) ?? db.materials.CAST_STEEL),
-    ),
-  );
-
-  const thermalScore = averageScore(
-    ["PISTON", "VALVES", ...extraParts].map(
-      (part) => materialThermalScore(matByPart.get(part as PartKey) ?? db.materials.CAST_STEEL),
-    ),
-  );
-
-  const driveFx = buildMaterialDriveFactors([...matByPart.values()]);
-
-  const rotatingResponseScore = averageScore(
-    ["PISTON", "ROD", "CRANK", "VALVES"].map((part) => {
-      const mat = matByPart.get(part as PartKey) ?? db.materials.CAST_STEEL;
-      const densityNorm = clamp(7850 / Math.max(mat.rho, 1), 0.55, 1.35);
-
-      return (
-        0.45 * materialStrengthScore(mat) +
-        0.30 * materialThermalScore(mat) +
-        0.25 * densityNorm
-      );
-    }),
-  );
-
-  const rpmResponseMul = clamp(1.28 - 0.32 * rotatingResponseScore, 0.72, 1.15);
-
-  const supportFactor = clamp(0.84 + 0.26 * strengthScore, 0.82, 1.1);
-  const heatGenerationFactor = clamp(1.12 - 0.3 * thermalScore, 0.78, 1.08);
-  const coolingFactor = (oiling?.coolingGain ?? 1.0) * (0.84 + 0.42 * thermalScore);
-  const wearFactor = (oiling?.wearGain ?? 1.0) * (1.22 - 0.38 * strengthScore);
-  const frictionMul = (oiling?.frictionLossTorqueMul ?? 1.0) * (1.06 - 0.1 * strengthScore);
+  const coolingGain = oiling?.coolingGain ?? 1.0;
+  const wearGain = oiling?.wearGain ?? 1.0;
+  const frictionMul = oiling?.frictionLossTorqueMul ?? 1.0;
 
   let omega = omegaFromRpm(engine.rpmIdle);
   let v = 0;
@@ -666,18 +627,17 @@ function simulateSeries(db: DbJson, engine: EngineConst, engineKey: EngineKey, s
 
     const thr = throttleAt(t);
     const curve = torqueCurve(engine, rpm);
-    const T_raw = buildCombustionTorque(engine, rpm, omega, thr) * supportFactor;
+    const T_raw = engine.T_base_Nm * thr * curve;
 
     const margin_p = TMAX_piston - Tp;
     const margin_v = TMAX_valves - Tv;
     const margin_s = hasSeal ? TMAX_seal - Ts : 1e9;
     const T_margin = Math.min(margin_p, margin_v, margin_s);
 
-    const heatRatio = clamp(T_margin / Math.max(g.dTSafe, 1), 0, 1);
-    const heatFactor = clamp(0.2 + 0.8 * Math.pow(heatRatio, 0.92), 0.2, 1);
+    const heatFactor = clamp(T_margin / g.dTSafe, 0, 1);
     const T_engine = T_raw * heatFactor;
 
-    const T_loss = (26 + 0.055 * omega) * frictionMul;
+    const T_loss = (28 + 0.06 * omega) * frictionMul;
 
     const F_drag = 0.5 * g.rhoAir * g.CdA * v * v;
     const F_roll = g.Crr * g.mVehicle * g.g;
@@ -687,44 +647,29 @@ function simulateSeries(db: DbJson, engine: EngineConst, engineKey: EngineKey, s
     const T_load_vehicle = (F_res * g.rWheel) / (g.eta * G);
     const T_load = T_loss + T_load_vehicle;
 
-    const alpha = (T_engine - T_load) / Math.max(I_total * driveFx.responseMul * rpmResponseMul, 1e-6);
+    const alpha = (T_engine - T_load) / Math.max(I_total, 1e-6);
+    omega = omega + alpha * dt;
 
-
-    omega = Math.max(omegaFromRpm(engine.rpmIdle), omega + alpha * dt);
-
-
-    const materialRpmCapMul = clamp(
-      0.84 + 0.10 * strengthScore + 0.06 * thermalScore + 0.08 * (1 / Math.max(driveFx.responseMul, 1e-6)),
-      0.82,
-      1.03,
-    );
-
-const thermalRpmCapMul = clamp(0.88 + 0.12 * heatFactor, 0.80, 1.0);
-
-const rpmCap = engine.RPM_redline * materialRpmCapMul * thermalRpmCapMul;
-
-const rpmClamped = Math.min(rpmFromOmega(omega), rpmCap);
-omega = omegaFromRpm(rpmClamped);
+    const rpmClamped = Math.min(rpmFromOmega(omega), engine.RPM_redline);
+    omega = omegaFromRpm(rpmClamped);
 
     const P_kW = (T_engine * omega) / 1000;
-    const P_loss_kW = Math.max(0, (T_loss * omega) / 1000);
-    const P_usable_kW = Math.max(0, P_kW * driveFx.usableEff - P_loss_kW);
+    const P_usable_kW = P_kW;
 
     const Pwheel_W = g.eta * (P_usable_kW * 1000);
     const F_drive = Pwheel_W / Math.max(v, 1.0);
     const a = (F_drive - F_res) / g.mVehicle;
     v = Math.max(0, v + a * dt);
 
-    const Qhot_W = engine.betaHot * (P_kW * 1000) * heatGenerationFactor * 0.18;
-    const coolingScale = 3.0;
+    const Qhot_W = engine.betaHot * (P_kW * 1000);
 
-    const dTp = (0.46 * Qhot_W - g.kCool.piston * coolingFactor * coolingScale * (Tp - g.TambC)) / Math.max(C_piston, 1);
-    const dTv = (0.34 * Qhot_W - g.kCool.valves * coolingFactor * coolingScale * (Tv - g.TambC)) / Math.max(C_valves, 1);
+    const dTp = (0.46 * Qhot_W - g.kCool.piston * coolingGain * (Tp - g.TambC)) / Math.max(C_piston, 1);
+    const dTv = (0.34 * Qhot_W - g.kCool.valves * coolingGain * (Tv - g.TambC)) / Math.max(C_valves, 1);
     Tp = Tp + dTp * dt;
     Tv = Tv + dTv * dt;
 
     if (hasSeal) {
-      const dTs = (0.20 * Qhot_W - g.kCool.seal * coolingFactor * coolingScale * 0.85 * (Ts - g.TambC)) / Math.max(C_seal, 1);
+      const dTs = (0.20 * Qhot_W - g.kCool.seal * coolingGain * (Ts - g.TambC)) / Math.max(C_seal, 1);
       Ts = Ts + dTs * dt;
     }
 
@@ -742,7 +687,7 @@ omega = omegaFromRpm(rpmClamped);
       const mat = matByPart.get(part);
       if (!mat) return 0;
       const sTot = sigmaTot(part, Ti);
-      return (0.55 * sTot) / mat.sigE + (0.45 * sTot) / mat.sigU;
+      return (0.6 * sTot) / mat.sigE + (0.4 * sTot) / mat.sigU;
     };
 
     const G_p = goodman("PISTON", Tp);
@@ -752,36 +697,15 @@ omega = omegaFromRpm(rpmClamped);
 
     const Tcrit = Math.max(Tp, Tv, hasSeal ? Ts : 0);
     const TcritMax = Math.max(TMAX_piston, TMAX_valves, hasSeal ? TMAX_seal : 0);
-    const fatigueReserve = clamp(0.86 + 0.18 * strengthScore, 0.86, 1.08);
 
-    const kD = 0.01;
-const kT = 0.006;
-const damageRate =
-  (kD * Math.max(0, G_worst - fatigueReserve) +
-    kT * Math.max(0, Tcrit / Math.max(TcritMax, 1) - 0.96)) * wearFactor;
-D = clamp(D + damageRate * dt, 0, 1);
+    const kD = 0.03;
+    const kT = 0.02;
+    const damageRate =
+      (kD * Math.max(0, G_worst - 1) + kT * Math.max(0, Tcrit / Math.max(TcritMax, 1) - 1)) * wearGain;
+    D = clamp(D + damageRate * dt, 0, 1);
 
-const durability = 100 * (1 - D);
-
-const rpmRatio = clamp(rpmClamped / engine.RPM_redline, 0, 1);
-const torqueUse = clamp((T_engine - T_loss) / Math.max(T_raw, 1e-6), 0, 1);
-const thermalUse = clamp(T_margin / Math.max(g.dTSafe, 1), 0, 1);
-const materialUse = clamp(
-  0.5 * clamp(strengthScore, 0, 1.2) +
-    0.3 * clamp(thermalScore, 0, 1.2) +
-    0.2 * clamp(1 / Math.max(driveFx.responseMul, 1e-6), 0, 1.25),
-  0,
-  1,
-);
-
-const U_rpm = clamp(
-  0.50 * rpmRatio +
-    0.20 * torqueUse +
-    0.15 * thermalUse +
-    0.15 * materialUse,
-  0,
-  1,
-);
+    const durability = 100 * (1 - D);
+    const U_rpm = rpmClamped / engine.RPM_redline;
 
     out["RPM(t)"].push({ t, y: rpmClamped });
     out["Power P(t) [kW]"].push({ t, y: P_kW });
@@ -797,6 +721,7 @@ const U_rpm = clamp(
 
   return out;
 }
+
 
 
 function SvgChart({ fn, series, animateKey }: { fn: FnKey; series: SeriesPoint[] | null; animateKey: number }) {

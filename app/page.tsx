@@ -1,6 +1,6 @@
 import { AuthButton } from "@/components/auth-button";
-import { Hero } from "@/components/hero";
-import { ThemeSwitcher } from "@/components/theme-switcher";
+import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { Suspense } from "react";
 
@@ -11,36 +11,64 @@ export default function Home() {
         <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
           <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
             <div className="flex gap-5 items-center font-semibold">
-              <Link href={"/"}>ENEN</Link>
             </div>
             <Suspense>
-                <AuthButton />
+              <AuthButton />
             </Suspense>
           </div>
         </nav>
-        <div className="flex-1 flex flex-col gap-20 max-w-5xl p-5">
-          <Hero />
-          <main className="flex-1 flex flex-col gap-6 px-4">
-            <h2 className="font-medium text-xl mb-4">Next steps</h2>
-            
-          </main>
-        </div>
+        <div className="registration-root">
+              <div className="registration-card intro-card">
+                <h1 className="registration-title">Project Intro</h1>
 
-        <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-16">
+                <p className="intro-text">
+                  This project is a 3D car configuration experience built around interactive vehicle and engine visualization.
+                  You can start on the Home page, open Customize to pick your car model and adjust options, then move to the
+                  Engine flow to explore Diesel/Gasoline and Hybrid setups.
+                </p>
+
+                <p className="intro-text">
+                  In Diesel/Gasoline and Hybrid pages, you can inspect the loaded models in 3D, change materials, run calculations,
+                  and review chart outputs like RPM, power, speed, temperature, and durability over time. The project is designed so
+                  users can compare configurations quickly and understand performance differences visually.
+                </p>
+
+                <p className="intro-text">
+                  You can also store your chosen builds in the Garage page and revisit saved models later. The current version focuses
+                  on frontend interaction and visualization, and backend connection can be added afterward.
+                </p>
+
+                <Suspense fallback={null}>
+                  <ContinueButton />
+                </Suspense>
+
+              </div>
+            </div>
+
+        <footer className="flex items-center justify-center mx-auto text-center text-xs gap-8 py-16">
           <p>
-            Powered by{" "}
-            <a
-              href="https://supabase.com/?utm_source=create-next-app&utm_medium=template&utm_term=nextjs"
-              target="_blank"
-              className="font-bold hover:underline"
-              rel="noreferrer"
-            >
-              Supabase
-            </a>
+            copyrights
           </p>
-          <ThemeSwitcher />
         </footer>
       </div>
     </main>
+  );
+}
+
+async function ContinueButton() {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims;
+
+  if (!user) {
+    return null;
+  }
+
+  return (
+    <div className="mt-8 flex justify-center">
+      <Button asChild size="lg">
+        <Link href="/pages/homepage">Continue</Link>
+      </Button>
+    </div>
   );
 }

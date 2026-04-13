@@ -1,6 +1,6 @@
 - [x] 2026.1.29 - Github letrehozasa es alap feltoltese
-- [ ] 2026.2.11 - Adatbazis letrehozasa
-- [ ] 2026.3.5 - Modellek feltoltese
-- [ ] 2026.3.28 - Authorizalas
-- [ ] 2026.4.15 - Regisztracio
-- [ ] 2026.4.30 - Teljes deployment
+- [x] 2026.2.11 - Adatbazis letrehozasa
+- [x] 2026.3.5 - Modellek feltoltese
+- [x] 2026.3.28 - Authorizalas
+- [x] 2026.4.15 - Regisztracio
+- [x] 2026.4.30 - Teljes deployment
